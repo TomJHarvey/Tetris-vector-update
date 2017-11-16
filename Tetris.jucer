@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="Vxm7bL" name="Tetris" projectType="guiapp" version="1.0.0"
+              bundleIdentifier="com.yourcompany.Tetris" includeBinaryInAppConfig="1"
+              jucerVersion="4.2.4">
+  <MAINGROUP id="ImCgP9" name="Tetris">
+    <GROUP id="{A294D1D2-ED76-FB12-CAB8-6C7F65159F9A}" name="Source">
+      <FILE id="b7D5pb" name="DrawTetriminos.cpp" compile="1" resource="0"
+            file="Source/DrawTetriminos.cpp"/>
+      <FILE id="Odumkr" name="DrawTetriminos.h" compile="0" resource="0"
+            file="Source/DrawTetriminos.h"/>
+      <FILE id="IJLDTg" name="Tetrimino.cpp" compile="1" resource="0" file="Source/Tetrimino.cpp"/>
+      <FILE id="TlxX6a" name="Tetrimino.h" compile="0" resource="0" file="Source/Tetrimino.h"/>
+      <FILE id="TFRQoa" name="Counter.cpp" compile="1" resource="0" file="Source/Counter.cpp"/>
+      <FILE id="oRG76y" name="Counter.h" compile="0" resource="0" file="Source/Counter.h"/>
+      <FILE id="CrJ2Tv" name="MainComponent.cpp" compile="1" resource="0"
+            file="Source/MainComponent.cpp"/>
+      <FILE id="vP8sjN" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
+      <FILE id="s2YZrg" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="Tetris"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="Tetris"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../Desktop 4/Year 3/Uni Applications/juce-grapefruit-osx/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../Desktop 4/Year 3/Uni Applications/juce-grapefruit-osx/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../Desktop 4/Year 3/Uni Applications/juce-grapefruit-osx/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../Desktop 4/Year 3/Uni Applications/juce-grapefruit-osx/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../Desktop 4/Year 3/Uni Applications/juce-grapefruit-osx/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../Desktop 4/Year 3/Uni Applications/juce-grapefruit-osx/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../Desktop 4/Year 3/Uni Applications/juce-grapefruit-osx/JUCE/modules"/>
+        <MODULEPATH id="juce_video" path="../Desktop 4/Year 3/Uni Applications/juce-grapefruit-osx/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../Desktop 4/Year 3/Uni Applications/juce-grapefruit-osx/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../Desktop 4/Year 3/Uni Applications/juce-grapefruit-osx/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../Desktop 4/Year 3/Uni Applications/juce-grapefruit-osx/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../Desktop 4/Year 3/Uni Applications/juce-grapefruit-osx/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../Desktop 4/Year 3/Uni Applications/juce-grapefruit-osx/JUCE/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0"/>
+    <MODULE id="juce_video" showAllCode="1" useLocalCopy="0"/>
+  </MODULES>
+  <JUCEOPTIONS/>
+</JUCERPROJECT>
