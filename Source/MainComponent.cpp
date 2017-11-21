@@ -200,6 +200,7 @@ void MainContentComponent::moveTetrimino(int downIncrement, int leftOrRightIncre
     currentXpositions = tetrimino.returnXposition(tetrimino.getX(), tetrimino.getWidth());  // Update the x and y positions each time a move has taken place
     currentYpositions = tetrimino.returnYposition(tetrimino.getY(), tetrimino.getWidth());
     
+    
 }
 
 
@@ -288,6 +289,10 @@ void MainContentComponent::updateRows()
 
     
     // Ask will any of the 4 sqaures in use be equal to any current squares in the grid if it is moved down, left or right
+    
+    
+    
+
     
 //    int blankSpace = 0;
 //    int blankSpaceIncrement[4] = {0,38,76,114};
