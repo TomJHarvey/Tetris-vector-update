@@ -14,22 +14,21 @@
 
 DrawTetrimino::DrawTetrimino()
 {
-    heightsForEachCollum.resize(10);
     
-    for (int i = 0; i < 10; i ++)
+    gridValues.resize(21);                      // Make it hold 21 different vectors, which is one for each line
+    
+    for (int i = 0; i < gridValues.size(); i ++)
     {
-        heightsForEachCollum[i].push_back(498);
+        gridValues[i].resize(10);               // Make each of the vectors have 10 items which makes each line 10 across.
     }
     
-    
-    
-    /*
-        For the collums that are being used which will be the first set of vectors. Add what the heights are into the heightsforeachcollum[]
-        When it goes to delete it searcches through each collum. If one of the values is on the same line it removes it. 
-        It then updates the heights of the collums with the largest one in the vector.
-     
-     
-     */
+    for (int i = 0; i < gridValues.size(); i ++)
+    {
+        for (int j = 0; j < gridValues[i].size(); j ++)
+        {
+            gridValues[i][j] = -1;           // Sets each piece of the grid equal to 0
+        }
+    }
 
 }
 DrawTetrimino::~DrawTetrimino()
@@ -37,172 +36,105 @@ DrawTetrimino::~DrawTetrimino()
 
 }
 
-void DrawTetrimino::getDimensions(Array <int> xDimensions, Array <int> yDimensions, int type)
+
+void DrawTetrimino::updateGrid(vector<vector <int>> &gridValuesReference)
 {
-    
+    for (int i = 0; i < 21; i ++)
+    {
+        for (int j = 0; j < 10; j ++)
+        {
+            gridValuesReference[i][j] = gridValues[i][j];
+        }
+    }
 }
 
-
-
-void DrawTetrimino::updateDimensions(std::vector <int> xDimensions,std::vector<int> yDimensions, int type) // THIS DOESN'T NEED TO BE A VECTOR.
+bool DrawTetrimino::updateDimensions(std::vector <int> xDimensions,std::vector<int> yDimensions, int type) // THIS DOESN'T NEED TO BE A VECTOR.
 {
     
-    numberOfLinesCleared = 0;
+    bool linesHaveBeenCleared = false;
     
-    for (int count = 0; count < xDimensions.size(); count ++)
+    for (int i = 0; i < 4; i ++)
     {
+        int xValue = (xDimensions[i] / 38) - 3;
+        int yValue = yDimensions[i]/38;
         
-        int numberOfLine = (yDimensions[count]/38) - 1;
-        xpositionsVector.push_back(xDimensions[count]);
-        ypositionsVector.push_back(yDimensions[count]);
-        coloursVector.push_back(type);
-        lineNumbers.push_back(numberOfLine);    // This number of line will corespond to each the y, x and colour.
-                                                // So when a line is deleted all x,y and colours of that same index will be deleted.
-        
-        numberOfsquaresPerLine[numberOfLine] ++; // increment the counter for the line that each new square is on
-        
-        
-        std::cout << "X positions = " << xpositionsVector[count] << std::endl;
-        std::cout << "Y positions = " << ypositionsVector[count] << std::endl;
-        
+        gridValues[yValue][xValue] = type;
+        numberOfsquaresPerLine[yValue] ++;
     }
     
-    
-    for (int i = 0 ; i < 20; i ++)
+    for (int i = 0; i < 21; i ++)
     {
-        std::cout << i << " :Number of sqaures per line = " << numberOfsquaresPerLine[i] << std::endl;
-    }
-    
-    // std::cout << "Number of total squares before = " << xPositions.size() << std::endl;
-    
-    for (int count = 0; count < 20; count ++) // remove line
-    {
-        if (numberOfsquaresPerLine[count] == 10)
+        
+        std::cout << i << ": Number of sqaures per line = " << numberOfsquaresPerLine[i] << std::endl;
+        
+        if (numberOfsquaresPerLine[i] == 10)
         {
- 
-            numberOfLinesCleared ++;
-            std::cout << "Line deleted" << std::endl;
+            std::cout << i << ": Number of sqaures per line = " << numberOfsquaresPerLine[i] << std::endl;
             
-            int lineCounter = 0;
+            numberOfsquaresPerLine[i] = 0;
+            for (int j = 0; j < 10; j ++)
+            {
+                gridValues[i][j] = -1;
+            }
             
-            for (int i = 0; i < xpositionsVector.size() ; i ++) // look through every element
+            for (int k = i; k > 0; k --)
             {
                 
-                if (lineNumbers[i] == count)    // if the sqaure is on this line
+                numberOfsquaresPerLine[k] = numberOfsquaresPerLine[k-1];
+                for (int l = 0; l < 10; l ++)
                 {
-                    
-                    xpositionsVector[i] = -1;
-                    ypositionsVector[i] = -1;
-                    coloursVector[i] = -1;
-                    lineNumbers[i] = -1;
-                    repaint();
-                    lineCounter ++;
+                  gridValues[k][l] = gridValues[k - 1][l];
                 }
             }
-            
-            std::cout << lineCounter << " :Lines deleted"  << std::endl;
-            
-            for (int i = xpositionsVector.size() - 1; i >=0 ; i --) // look through every element
-            {
-                if (lineNumbers[i] == -1)    // if the sqaure is on this line
-                    {
-            
-                    xpositionsVector[i] = xpositionsVector.back();
-                    xpositionsVector.pop_back();
-                    ypositionsVector[i] = ypositionsVector.back();
-                    ypositionsVector.pop_back();
-                    coloursVector[i] = coloursVector.back();
-                    coloursVector.pop_back();
-                    lineNumbers[i] = lineNumbers.back();
-                    lineNumbers.pop_back();
-                    repaint();
-                                
-                    }
-                }
+            repaint();
+            linesHaveBeenCleared = true;
             
             
             
             
-            
-//            for (int i = xpositionsVector.size() - 1; i >=0 ; i --) // look through every element
-//            {
-//                if (lineNumbers[i] == count)    // if the sqaure is on this line
-//                {
-//
-//                    xpositionsVector[i] = xpositionsVector.back();
-//                    xpositionsVector.pop_back();
-//                    ypositionsVector[i] = ypositionsVector.back();
-//                    ypositionsVector.pop_back();
-//                    coloursVector[i] = coloursVector.back();
-//                    coloursVector.pop_back();
-//                    lineNumbers[i] = lineNumbers.back();
-//                    lineNumbers.pop_back();
-//                    repaint();
-//                    
-//                }
-//            }
-
-            
-            for (int counter = count; counter > 0; counter --)    // count is the line that has just been removed
-            {
-                numberOfsquaresPerLine[counter] = numberOfsquaresPerLine[counter - 1];  // This makes each line equal to the line below it starting from the line that has been removed
-            }
-            
-            numberOfsquaresPerLine[0] = 0; // the top one will always = 0 if a line has been removed.
-            
-            for (int i = 0; i < ypositionsVector.size(); i ++)
-            {
-                
-                if (ypositionsVector[i] <= count * 38 )
-                {
-                    ypositionsVector[i] +=38;
-                    lineNumbers[i] +=1;
-                    repaint();
-                }
-            }
-            
-            //std::cout << "Y size after = " <<  yPositions.size() << std::endl;
         }
         
     }
     
-//    for (int counter = 0; counter < xPositions.size(); counter ++)
+    
+//    for (int i = 0; i < 21; i ++)
 //    {
-//        std::cout << counter << ": Y positions = " << yPositions[counter]/38 << std::endl;
-//        std::cout << counter << ": X positions = " << xPositions[counter]/38 << std::endl;
+//        std::cout << "LINE = : " << i << std::endl << std::endl;
+//        
+//        for (int j = 0; j < 10; j ++)
+//        {
+//            std::cout << "GRID VALUES = " << gridValues[i][j] << std::endl;
+//        }
+//        
 //    }
+   
+    repaint();
     
-    
-    
-    //  std::cout << "Number of total squares after = " << xPositions.size() << std::endl;
-}
+    if (linesHaveBeenCleared == false)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 
-int DrawTetrimino::getNumberOflinesCleared()
-{
-    std::cout << "Number of liens cleared: " << numberOfLinesCleared << std::endl;
-    return numberOfLinesCleared;
 }
 
 void DrawTetrimino::paint(Graphics& g)
 {
-       // std::cout << "X SIZE = " << xPositions.size() << std::endl;
-
-//    if (drawNew == 1)
-//    {
-//        std::cout << "DRAW " << std::endl;
-    
-        for (int count = 0; count < xpositionsVector.size(); count ++)
+    for (int i = 0; i < 21; i ++)
+    {
+        for (int j = 0; j < 10; j ++)
         {
-            g.setColour(tetriminoColorus[coloursVector[count]]);
-            g.drawRect(xpositionsVector[count], ypositionsVector[count], 38, 38);
-            g.fillRect(xpositionsVector[count], ypositionsVector[count], 38, 38);
-            
-//         
-//            std::cout << "Y positions = " << yPositions[count] << std::endl;
-//            std::cout << "X positions = " << xPositions[count] << std::endl;
+            if (gridValues[i][j] != -1)
+            {
+                g.setColour(tetriminoColorus[gridValues[i][j]]);
+                g.drawRect((j + 3) * 38, i*38, 38, 38);
+                g.fillRect((j + 3) * 38, i*38, 38, 38);
+            }
         }
-
- 
+    }
 }
 
 

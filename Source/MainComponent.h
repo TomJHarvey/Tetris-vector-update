@@ -15,6 +15,8 @@
 #include "DrawTetriminos.h"
 
 
+
+
 //==============================================================================
 /*
     This component lives inside our window, and this is where you should put all
@@ -32,6 +34,7 @@ public:
     void updateRows();
     void updateHeightOfColumns();
     void checkAvailableSpaceForTetrimino();
+    void moveTetrimino(int downIncrement, int leftOrRightIncrement);
     
     /** Updates the sequence based on the main thread counter position.*/
     void counterChanged (int counterValue_) override;
@@ -57,7 +60,7 @@ private:
     Tetrimino tetrimino;
     DrawTetrimino drawTetrimino;
 
-    int tetriminoSizes[7][2] = {
+    int tetriminoWidthAndHeight[7][2] = {
         
         {152,38},   // i
         {76,76},    // o
@@ -81,20 +84,23 @@ private:
     
     
     
+
+    std::vector <int> currentXpositions;
+    std::vector <int> currentYpositions;
+    
     int tetriminoCounter = 0;   // the number of the current tetrimino
     int fallingCounter = 0;     // how many sqaures the current tetrimino has fallen
     Random randomTetrimino;     // generates the random tetrimino type
     int tetriminoType = 0;
     int numberOfSquaresFallen = 0;
-    int currentTetriminoPosition = 0;
+    int currentTetriminoXposition = 0;
     int rotationCounter = 0; // This is used to offset the tetrimino if it on its 4th rotation.
     
     bool isPieceFalling = false;    // keeps track if a piece is falling
     bool pieceHasLanded = false;    // is true when a piece has landed which resets and creates a new piece.
+    bool canPieceFallFurther = true;
     
     int testCounter = 0;
-    
- 
     
     int currentHeightOfColumn[10] = {0};     // For each collum the current height
     int currentPositionOfTetrimino[4] = {0};
@@ -102,6 +108,10 @@ private:
     int blankSquaresX[2] = {0};
     int blankSquaresY[2] = {0};
     int blankSpaceIncrement[4] = {0,38,76,114};
+    
+    
+    vector<vector <int>> gridValues;
+    
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainContentComponent)

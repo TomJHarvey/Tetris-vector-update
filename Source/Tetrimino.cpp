@@ -79,7 +79,6 @@ void Tetrimino::rotateShape(int type)
 
 int Tetrimino::returnBlankSpace(int xAxisValue, int topOrbottom)
 {
-    
     int firstYvalue[2] =    {getHeight() - 38,0};
     int secondYvalue[2] =   {getHeight() - 76,38};
 
@@ -92,111 +91,24 @@ int Tetrimino::returnBlankSpace(int xAxisValue, int topOrbottom)
                     
                     for (int counter = 0; counter < 6; counter ++)
                     {
-                        if (xPosition[counter] == xAxisValue && yPosition[counter]  == secondYvalue[topOrbottom])// checks to see if there is an extra blank space above or below (only for T and J pieces this applies)
+                        if (xPosition[counter] == xAxisValue && yPosition[counter]  == secondYvalue[topOrbottom])// checks to see if there is an extra blank space above or below (only for L and J pieces this applies)
                         {
                             if (tetriminoSquaresChecker[typeSelect][counter] == 0)        // if it is, check to see if there is a blank space
                             {
                                 return 76;
                             }
                         }
-                        
-                        
+ 
                     }
     
                     return 38; // if it doesn't find an space return just one space
                 }
             }
-
         }
-        
     
     return 0;
     
 }
-
-
-Array<int> Tetrimino::returnXpositions(int tetriminoXposition, int width)
-{
-    Array<int> *xPositions = new Array<int>[4];
-    
-    if (typeSelect != 0 && typeSelect != 1)
-    {
-        for (int count = 0; count < 6; count ++)
-        {
-            if (tetriminoSquaresChecker[typeSelect][count] == 1) // If there is a sqaure at this position
-            {
-                xPositions->add(xPosition[count] + tetriminoXposition);
-            }
-        }
-    }
-    
-    else
-    {
-        for (int count = 0; count < 4 ; count ++)
-        {
-            if (typeSelect == 0)
-            {
-                if (width == 152 )
-                {
-                    xPositions->add(iXdimensionsFlat[count] + tetriminoXposition);      // sort out i block
-                }
-                else
-                {
-                    xPositions->add(iXdimensionsStanding[count] + tetriminoXposition);
-                }
-            }
-            else if (typeSelect == 1)
-            {
-                xPositions->add(oXdimensions[count] + tetriminoXposition);
-            }
-        }
-    }
-    
-    return *xPositions;
-}
-
-
-Array<int> Tetrimino::returnYpositions(int tetriminoYposition, int width) // make these into one function
-{
-    Array<int> *yPositions = new Array<int>[4];
-    
-    if (typeSelect != 0 && typeSelect != 1)
-    {
-        for (int count = 0; count < 6; count ++)
-        {
-            if (tetriminoSquaresChecker[typeSelect][count] == 1) // If there is a sqaure at this position
-            {
-                yPositions->add(yPosition[count] + tetriminoYposition);
-            }
-        }
-    }
-    
-    else
-    {
-        for (int count = 0; count < 4 ; count ++)
-        {
-            if (typeSelect == 0)
-            {
-                if (width == 152 )
-                {
-                    yPositions->add(iYdimensionsFlat[count] + tetriminoYposition);
-                }
-                else
-                {
-                    yPositions->add(iYdimensionsStanding[count] + tetriminoYposition);
-                }
-            }
-            else if (typeSelect == 1)
-            {
-                yPositions->add(oYdimensions[count] + tetriminoYposition);
-            }
-        }
-    }
-    
-    return *yPositions;
-    
-}
-
 
 std::vector <int> Tetrimino::returnXposition(int tetriminoXposition, int width) // THIS DOESN'T NEED TO BE A VECTOR.
 {

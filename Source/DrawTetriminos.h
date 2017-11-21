@@ -21,10 +21,11 @@ public:
     
     DrawTetrimino();
     ~DrawTetrimino();
-    void getDimensions(Array <int> xDimensions, Array <int> yDimensions, int type);
-    void updateDimensions(std::vector <int> xDimensions,std::vector<int> yDimensions, int type);
+    bool updateDimensions(std::vector <int> xDimensions,std::vector<int> yDimensions, int type);
+    void updateGrid(vector<vector <int>> &gridValuesReference);
+    
     void paint (Graphics&) override;
-    int getNumberOflinesCleared();
+
     
 private:
     
@@ -37,6 +38,8 @@ private:
     std::vector <int> coloursVector;
     std::vector <int> lineNumbers;
     
+    
+    vector<vector <int>> gridValues;
     
     std::vector<std::vector <int>> heightsForEachCollum;
 

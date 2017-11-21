@@ -30,7 +30,7 @@ MainContentComponent::MainContentComponent()
     addAndMakeVisible(goalNumber);
     
     threadCounter.startCounter();   // Starts the counter// in the future select the level to chnage the speed
-    threadCounter.setSpeed(100); // Sets the speed for the first level
+    threadCounter.setSpeed(200); // Sets the speed for the first level
     threadCounter.setListener(this);
 
     addAndMakeVisible(tetrimino);
@@ -47,6 +47,24 @@ MainContentComponent::MainContentComponent()
     
     addAndMakeVisible(drawTetrimino);           // Make the tetrimino piece visible
     
+    gridValues.resize(21);                      // Make it hold 21 different vectors, which is one for each line
+    
+    for (int i = 0; i < gridValues.size(); i ++)
+    {
+        gridValues[i].resize(10);               // Make each of the vectors have 10 items which makes each line 10 across.
+    }
+    
+    for (int i = 0; i < gridValues.size(); i ++)
+    {
+        for (int j = 0; j < gridValues[i].size(); j ++)
+        {
+            gridValues[i][j] = -1;           // Sets each piece of the grid equal to 0
+        }
+    }
+    
+    currentXpositions.resize(4);
+    currentYpositions.resize(4);
+    
 }
 
 MainContentComponent::~MainContentComponent()
@@ -58,91 +76,176 @@ MainContentComponent::~MainContentComponent()
 void MainContentComponent::counterChanged (int counterValue_)
 {
   
+    if (canPieceFallFurther == false) // if the piece can't fall down any further it is drawn
+    {
+        bool haveLinesBeenCleared = drawTetrimino.updateDimensions(currentXpositions, currentYpositions, tetriminoType); // this needs to return something.
+        int xValue = 0;
+        int yValue = 0;
+        
+        if (haveLinesBeenCleared == false)
+        {
+
+            for (int i = 0 ; i < 4 ; i ++)
+            {
+                xValue = ((currentXpositions[i] / 38) - 3);
+                yValue = (currentYpositions[i] / 38);
+                gridValues[yValue][xValue] = tetriminoType;
+            }
+            
+        }
+        
+        else
+        {
+            drawTetrimino.updateGrid(gridValues);
+        }
+ 
+        isPieceFalling = false; // once it is drawn this allows a new one to be created
+        canPieceFallFurther = true;
+    }
+    
     if (isPieceFalling == false)
     {
-        isPieceFalling = true;
+        
+        // When a piece isn't falling, a new a piece is created, all it will do here is create this piece, update it to falling and reset the aprotiate variables for a new piece.
+        // But we will be able to moveit left, right and down using the keyboard still.
+        // When a piece is created the 4 sqaures need to be added to the array in the position they are at relative to the main screen.
+        
+        isPieceFalling = true;                                          // Set the piece to be falling
         pieceHasLanded = false;
         numberOfSquaresFallen = 0;                                      // How many squares the piece has fallen is reset each time its a new piece
-        tetriminoType = randomTetrimino.nextInt(7);                     //  a random tetrimino is created
+        tetriminoType = randomTetrimino.nextInt(7);                     // A random tetrimino is selected
         rotationCounter = 0;
-        
+        currentTetriminoXposition = 304;
         tetriminoType = 0;
         
-        if (tetriminoType != 0 || tetriminoType != 1)                   // Checks to see if the component has the correct width and height
+        if (tetriminoType != 0 || tetriminoType != 1)                   // Checks to see if the component has the correct default width and height
         {
-            if (tetriminoSizes[tetriminoType][0] == 76)                 // If they are incorrect they are swapped back to the default width and height
+            if (tetriminoWidthAndHeight[tetriminoType][0] == 76)                 // If they are incorrect they are swapped back to the default width and height
             {
-                int sizeCopy = tetriminoSizes[tetriminoType][0];
-                tetriminoSizes[tetriminoType][0] = tetriminoSizes[tetriminoType][1];
-                tetriminoSizes[tetriminoType][1] = sizeCopy;
+                int sizeCopy = tetriminoWidthAndHeight[tetriminoType][0];
+                tetriminoWidthAndHeight[tetriminoType][0] = tetriminoWidthAndHeight[tetriminoType][1];
+                tetriminoWidthAndHeight[tetriminoType][1] = sizeCopy;
             }
         }
         
-        tetrimino.setBounds(304, 0, tetriminoSizes[tetriminoType][0], tetriminoSizes[tetriminoType][1]);
-        tetrimino.setType(tetriminoType);
-        currentTetriminoPosition = 304; // default to the middle
-        updateRows();
+        // The width and height of the piece is drawn with the x position in the middle and the y at the top
+        tetrimino.setBounds(currentTetriminoXposition, 0, tetriminoWidthAndHeight[tetriminoType][0], tetriminoWidthAndHeight[tetriminoType][1]);
+        tetrimino.setType(tetriminoType);                                                                                       // The type is selected and in tetriminos paint function the piece is drawn.
+        currentXpositions = tetrimino.returnXposition(tetrimino.getX(), tetrimino.getWidth());
+        currentYpositions = tetrimino.returnYposition(tetrimino.getY(), tetrimino.getWidth());
         
-        // reset fallcount
+        std::cout << "X size = " << currentXpositions.size() << std::endl;
+
     }
     
-   else if (isPieceFalling == true) // If there is room for it to fall
+    else if (isPieceFalling == true) // If there is room for it to fall
     {
-        numberOfSquaresFallen ++;
-        tetrimino.setBounds(currentTetriminoPosition, numberOfSquaresFallen * 38, tetriminoSizes[tetriminoType][0], tetriminoSizes[tetriminoType][1]);
-        updateRows();
+        if (tetrimino.getY() + tetrimino.getHeight() <= 760)
+        {
+            moveTetrimino(38, 0);
+        }
+        else
+        {
+            canPieceFallFurther = false;
+        }
+        
     }
 
-    
-    checkAvailableSpaceForTetrimino(); // each time it falls check to see if it has made the limit.
-    
     if (pieceHasLanded == true)
     {
         isPieceFalling = false;
     }
-
+    
 }
+
+
+void MainContentComponent::moveTetrimino(int downIncrement, int leftOrRightIncrement)
+{
+
+    int yValue = 0;
+    int xValue = 0;
+    bool tetriminoCanMove = true;
+    
+//    std::cout << "X size = " << currentXpositions.size() << std::endl << std::endl;
+    
+    for (int i = 0; i < 4; i ++)
+    {
+        
+        xValue = ((currentXpositions[i] / 38) - 3) + (leftOrRightIncrement/38);
+        yValue = (currentYpositions[i] / 38) + (downIncrement/38);
+        
+//        std::cout << i << ": X value = " << xValue << std::endl;
+//        std::cout << i << ": Y value = " << yValue << std::endl;
+        
+        
+        if (gridValues[yValue][xValue] != -1) // if there is a sqaure in that position
+        {
+            tetriminoCanMove = false;
+        }
+        
+    }
+    
+    if (tetriminoCanMove == true)
+    {
+        
+        currentTetriminoXposition += leftOrRightIncrement;  // move the piece left or right
+        numberOfSquaresFallen += downIncrement;             // increase number of sqaures fallen.
+        canPieceFallFurther = true;                         // update the piece to be falling because the piece may not have been able to fall before it was moved (left or right)
+        
+        // Apply the updated x or y position
+        
+        tetrimino.setBounds(currentTetriminoXposition, numberOfSquaresFallen, tetriminoWidthAndHeight[tetriminoType][0], tetriminoWidthAndHeight[tetriminoType][1]);
+    }
+
+    currentXpositions = tetrimino.returnXposition(tetrimino.getX(), tetrimino.getWidth());  // Update the x and y positions each time a move has taken place
+    currentYpositions = tetrimino.returnYposition(tetrimino.getY(), tetrimino.getWidth());
+    
+    
+}
+
+
+
 
 
 bool MainContentComponent::keyPressed(const KeyPress &key, Component* originatingComponent )
 {
     
-    //DBG(key.getKeyCode());
-    // Move the tetrimino to the left
+     DBG(key.getKeyCode());
+    
+    // Move tetrimino to the left
     if (key.getKeyCode() == 63234)
     {
-        if (currentTetriminoPosition >= 152)
+        if (currentTetriminoXposition >= 152)
         {
-            currentTetriminoPosition -= 38;
-            tetrimino.setBounds(currentTetriminoPosition, numberOfSquaresFallen * 38, tetriminoSizes[tetriminoType][0], tetriminoSizes[tetriminoType][1]);
+            moveTetrimino(0, -38);
         }
-        
-        updateRows();
     }
     
     // Move the tetrimino to the right
     else if (key.getKeyCode() == 63235)
     {
-        if (currentTetriminoPosition + tetriminoSizes[tetriminoType][0] <= 456)
+        if (currentTetriminoXposition + tetriminoWidthAndHeight[tetriminoType][0] <= 456)
         {
-            currentTetriminoPosition += 38;
-            tetrimino.setBounds(currentTetriminoPosition, numberOfSquaresFallen * 38, tetriminoSizes[tetriminoType][0], tetriminoSizes[tetriminoType][1]);
+            moveTetrimino(0, 38);
         }
-        updateRows();
     }
     
-    else if (key.getKeyCode() == 63233 && tetrimino.getY() + tetrimino.getHeight() <= 7 )
+    // Move tetrimino down
+    else if (key.getKeyCode() == 63233)
     {
-        if (currentTetriminoPosition + tetriminoSizes[tetriminoType][0] <= 456)
+        if (tetrimino.getY() + tetrimino.getHeight() <= 760)
         {
-            numberOfSquaresFallen ++;
-            tetrimino.setBounds(currentTetriminoPosition, numberOfSquaresFallen * 38, tetriminoSizes[tetriminoType][0], tetriminoSizes[tetriminoType][1]);
+            moveTetrimino(38, 0);
         }
-        updateRows();
+        
+        else
+        {
+            canPieceFallFurther = false;
+        }
     }
     
     // Rotate the shape
-    else if (key.getKeyCode() == 63232)
+    else if (key.getKeyCode() == 63232)                 // Make it so this works properly and only rotates shapes if it has the room too, also make sure number of squares fallen isn't timesd *
     {
         if (tetriminoType != 1)
         {
@@ -165,108 +268,118 @@ bool MainContentComponent::keyPressed(const KeyPress &key, Component* originatin
                 yOffset = - 38;
             }
             
-            int sizeCopy = tetriminoSizes[tetriminoType][0];                        // this swaps the width and the height values around
-            tetriminoSizes[tetriminoType][0] = tetriminoSizes[tetriminoType][1];
-            tetriminoSizes[tetriminoType][1] = sizeCopy;
+            int sizeCopy = tetriminoWidthAndHeight[tetriminoType][0];                        // this swaps the width and the height values around
+            tetriminoWidthAndHeight[tetriminoType][0] = tetriminoWidthAndHeight[tetriminoType][1];
+            tetriminoWidthAndHeight[tetriminoType][1] = sizeCopy;
             
             // Then the position is updated
-            tetrimino.setBounds(currentTetriminoPosition + xOffset, (numberOfSquaresFallen * 38) + yOffset, tetriminoSizes[tetriminoType][0], tetriminoSizes[tetriminoType][1]);
+            tetrimino.setBounds(currentTetriminoXposition + xOffset, (numberOfSquaresFallen) + yOffset, tetriminoWidthAndHeight[tetriminoType][0], tetriminoWidthAndHeight[tetriminoType][1]);
             tetrimino.rotateShape(tetriminoType);         // re draws the shape
-            updateRows();
         }
         
     }
 
+
+    
 }
 
 void MainContentComponent::updateRows()
 {
-    int blankSpace = 0;
-    int blankSpaceIncrement[4] = {0,38,76,114};
+    // This should be called update shape
 
-    // This is the position of each block relative to the 10x10 grid.
-    // The first value starts from the left.
     
-    currentPositionOfTetrimino[0] = (tetrimino.getX() - 114) / 38;
-    currentPositionOfTetrimino[1] = currentPositionOfTetrimino[0] + 1;
-    currentPositionOfTetrimino[2] = currentPositionOfTetrimino[1] + 1;
-    currentPositionOfTetrimino[3] = currentPositionOfTetrimino[2] + 1;
+    // Ask will any of the 4 sqaures in use be equal to any current squares in the grid if it is moved down, left or right
     
-    if (tetriminoType != 1 && tetriminoType != 0)
-    {
-        for (int blankSpaceCounter = 0; blankSpaceCounter < tetrimino.getWidth()/38 ; blankSpaceCounter ++ ) // check each bottom square on the x axis
-        {
-            blankSpace = tetrimino.returnBlankSpace(blankSpaceIncrement[blankSpaceCounter],0);                  // 0 is second argument for the top
-            currentTetriminoLimit[blankSpaceCounter] = tetrimino.getY() + tetrimino.getHeight() - blankSpace;
-             //std::cout << blankSpaceCounter << ": tetrimino limit = " << currentTetriminoLimit[blankSpaceCounter] << std::endl;
-        }
-    }
     
-    else    // if its i or o
-    {
-        for (int count = 0; count < tetrimino.getWidth()/38; count ++)
-        {
-            currentTetriminoLimit[count] = tetrimino.getY() + tetrimino.getHeight();
-           // std::cout << count << ": tetrimino limit = " << currentTetriminoLimit[count] << std::endl;
-        }
-    }
+    
+
+    
+//    int blankSpace = 0;
+//    int blankSpaceIncrement[4] = {0,38,76,114};
+//
+//    // This is the position of each block relative to the 10x10 grid.
+//    // The first value starts from the left.
+//    
+//    currentPositionOfTetrimino[0] = (tetrimino.getX() - 114) / 38;
+//    currentPositionOfTetrimino[1] = currentPositionOfTetrimino[0] + 1;
+//    currentPositionOfTetrimino[2] = currentPositionOfTetrimino[1] + 1;
+//    currentPositionOfTetrimino[3] = currentPositionOfTetrimino[2] + 1;
+//    
+//    if (tetriminoType != 1 && tetriminoType != 0)
+//    {
+//        for (int blankSpaceCounter = 0; blankSpaceCounter < tetrimino.getWidth()/38 ; blankSpaceCounter ++ ) // check each bottom square on the x axis
+//        {
+//            blankSpace = tetrimino.returnBlankSpace(blankSpaceIncrement[blankSpaceCounter],0);                  // 0 is second argument for the top
+//            currentTetriminoLimit[blankSpaceCounter] = tetrimino.getY() + tetrimino.getHeight() - blankSpace;
+//             //std::cout << blankSpaceCounter << ": tetrimino limit = " << currentTetriminoLimit[blankSpaceCounter] << std::endl;
+//        }
+//    }
+//    
+//    else    // if its i or o
+//    {
+//        for (int count = 0; count < tetrimino.getWidth()/38; count ++)
+//        {
+//            currentTetriminoLimit[count] = tetrimino.getY() + tetrimino.getHeight();
+//           // std::cout << count << ": tetrimino limit = " << currentTetriminoLimit[count] << std::endl;
+//        }
+//    }
 }
 
 void MainContentComponent::updateHeightOfColumns()
 {
-    int numberOflinesCleared = 0;
-    int blankSpace = 0;
-    
-    if (tetriminoType != 1 && tetriminoType != 0)
-    {
-        for (int count = 0; count < tetrimino.getWidth()/38; count ++)
-        {
-            blankSpace = tetrimino.returnBlankSpace(blankSpaceIncrement[count],1);
-            //std::cout << "Previous height = " << currentHeightOfColumn[currentPositionOfTetrimino[count]] << std::endl;
-            currentHeightOfColumn[currentPositionOfTetrimino[count]] = tetrimino.getY() + blankSpace;
-            //std::cout << "Current height = " << currentHeightOfColumn[currentPositionOfTetrimino[count]] << std::endl;
-        }
-    }
-    
-    else
-    {
-        for (int count = 0; count < tetrimino.getWidth()/38; count ++)
-        {
-             currentHeightOfColumn[currentPositionOfTetrimino[count]] = tetrimino.getY();
-        }
-    }
-    
-   numberOflinesCleared = drawTetrimino.getNumberOflinesCleared();
-    
-    if (numberOflinesCleared > 0)
-    {
-        for (int count = 0; count < 10; count ++)
-        {
-            currentHeightOfColumn[count] += (numberOflinesCleared * 38);                            ////////////// ////////////// ////////////// ////////////// ////////////// ////////////// ////////////// ////////////// //////////////
-        }
-    }
+//    int numberOflinesCleared = 0;
+//    int blankSpace = 0;
+//    
+//    if (tetriminoType != 1 && tetriminoType != 0)
+//    {
+//        for (int count = 0; count < tetrimino.getWidth()/38; count ++)
+//        {
+//            blankSpace = tetrimino.returnBlankSpace(blankSpaceIncrement[count],1);
+//            //std::cout << "Previous height = " << currentHeightOfColumn[currentPositionOfTetrimino[count]] << std::endl;
+//            currentHeightOfColumn[currentPositionOfTetrimino[count]] = tetrimino.getY() + blankSpace;
+//            //std::cout << "Current height = " << currentHeightOfColumn[currentPositionOfTetrimino[count]] << std::endl;
+//        }
+//    }
+//    
+//    else
+//    {
+//        for (int count = 0; count < tetrimino.getWidth()/38; count ++)
+//        {
+//             currentHeightOfColumn[currentPositionOfTetrimino[count]] = tetrimino.getY();
+//        }
+//    }
+//    
+//   numberOflinesCleared = drawTetrimino.getNumberOflinesCleared();
+//    
+//    if (numberOflinesCleared > 0)
+//    {
+//        for (int count = 0; count < 10; count ++)
+//        {
+//            currentHeightOfColumn[count] += (numberOflinesCleared * 38);                            ////////////// ////////////// ////////////// ////////////// ////////////// ////////////// ////////////// ////////////// //////////////
+//        }
+//    }
  
 }
 
 void MainContentComponent::checkAvailableSpaceForTetrimino()
 {
-        for (int count = 0; count < tetrimino.getWidth()/38; count ++)
-        {
-            //std::cout << count << ": current limit =" << currentTetriminoLimit[count] << " Current height of collum = " << currentHeightOfColumn[currentPositionOfTetrimino[count]] << std::endl;
-            if (currentTetriminoLimit[count] == currentHeightOfColumn[currentPositionOfTetrimino[count]])
-            {
-                pieceHasLanded = true;
-               // drawTetrimino.getDimensions(tetrimino.returnXpositions(tetrimino.getX(), tetrimino.getWidth()), tetrimino.returnYpositions(tetrimino.getY(), tetrimino.getWidth()), tetriminoType);
-                drawTetrimino.updateDimensions(tetrimino.returnXposition(tetrimino.getX(), tetrimino.getWidth()), tetrimino.returnYposition(tetrimino.getY(), tetrimino.getWidth()), tetriminoType);
-                updateHeightOfColumns();
-                drawTetrimino.repaint();
-                
-                for (int count = 0; count < 4; count ++)
-                {
-                    currentTetriminoLimit[count] = 0;
-                }
-            }
-        }
+//        for (int count = 0; count < tetrimino.getWidth()/38; count ++)
+//        {
+//            //std::cout << count << ": current limit =" << currentTetriminoLimit[count] << " Current height of collum = " << currentHeightOfColumn[currentPositionOfTetrimino[count]] << std::endl;
+//            if (currentTetriminoLimit[count] == currentHeightOfColumn[currentPositionOfTetrimino[count]])
+//            {
+//                pieceHasLanded = true;
+//               // drawTetrimino.getDimensions(tetrimino.returnXpositions(tetrimino.getX(), tetrimino.getWidth()), tetrimino.returnYpositions(tetrimino.getY(), tetrimino.getWidth()), tetriminoType);
+//                drawTetrimino.updateDimensions(tetrimino.returnXposition(tetrimino.getX(), tetrimino.getWidth()), tetrimino.returnYposition(tetrimino.getY(), tetrimino.getWidth()), tetriminoType);
+//                updateHeightOfColumns();
+//                drawTetrimino.repaint();
+//                
+//                for (int count = 0; count < 4; count ++)
+//                {
+//                    currentTetriminoLimit[count] = 0;
+//                }
+//            }
+//        }
 }
 
 void MainContentComponent::resetSequence(int buttonType_)

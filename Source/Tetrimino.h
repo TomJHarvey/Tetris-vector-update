@@ -25,10 +25,9 @@ public:
     void paint (Graphics&) override;
     void rotateShape(int type);
     int returnBlankSpace(int xAxisValue, int topOrbottom);
-    Array<int> returnXpositions(int tetriminoYposition, int width);
-    Array<int> returnYpositions(int tetriminoXposition, int width);
     std::vector <int> returnYposition(int tetriminoYposition, int width);
     std::vector <int> returnXposition(int tetriminoXposition, int width);
+    
    
 private:
     
