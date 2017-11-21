@@ -27,37 +27,53 @@ void Tetrimino::setType(int type)
 {
     typeSelect = type;
     rotateCounter = 0;
+    firstRotation = true;
     rotateShape(typeSelect);
     
 }
+void Tetrimino::getGridInformation(std::vector<std::vector <int >> gridValues, int tetriminoXposition, int tetriminoYposition)
+{
+    gridValuesCopy = gridValues;
+    firstRotation = false;
+    tetriminoXpositionCopy = tetriminoXposition;
+    tetriminoYpositionCopy = tetriminoYposition;
+}
 
-void Tetrimino::rotateShape(int type)
+bool Tetrimino::rotateShape(int type)
 {
 
+    // Every shape apart from i and o are made up of 4 squares and two blank squares.
+    // This function keeps the order of the squares and makes it so each square keeps its value when it is rotated.
+    
     // In each rotation either X or Y is static or moving.
     // Static is if it has only two different values
     // Moving is if it has three different values
+    // For example  X was static and Y was moving, this would mean the same x axis is used for three different y values. Then the next x value along the axis is used for the same three y values.
 
     int rowIncrement = 0;
     int increment = xOrYstartPos[rotateCounter];
     int* xOrYpointerStatic = nullptr;
     int* xOrYpointerMoving = nullptr;
     
+    int xPositionCopy[6] = {0};
+    int yPositionCopy[6] = {0};
+    
+   
     if (rotateCounter == 0 || rotateCounter == 2)
     {
-        xOrYpointerStatic = yPosition;
-        xOrYpointerMoving = xPosition;
+        xOrYpointerStatic = yPositionCopy;
+        xOrYpointerMoving = xPositionCopy;
     }
     else
     {
-        xOrYpointerStatic = xPosition;
-        xOrYpointerMoving = yPosition;
+        xOrYpointerStatic = xPositionCopy;
+        xOrYpointerMoving = yPositionCopy;
     }
 
     for (int count = 0; count < 6; count ++ )   // Writes the cordiantes for each sqaure
     {
         
-                if (count == 3 )                                    // Re sets the row or collum
+                if (count == 3 )                                    // Re sets the row or collum that it is counting through
                 {
                     rowIncrement = (rotateCounter + 1);             // Choses the next value for the row select array
                     increment = xOrYstartPos[rotateCounter];
@@ -68,47 +84,59 @@ void Tetrimino::rotateShape(int type)
                 increment += xOrYdirection[rotateCounter];
     }
 
-    rotateCounter ++;
+    if (firstRotation == false) // if this is not the first time
+    {
+
+        int yValue = 0;
+        int xValue = 0;
+        
+        for (int i = 0; i < 6 ; i ++)
+        {
+            if (tetriminoSquaresChecker[typeSelect][i] == 1) // If there is a sqaure at this position
+            {
+                yValue = (yPositionCopy[i] + tetriminoYpositionCopy) / 38;
+                xValue = ((xPositionCopy[i] + tetriminoXpositionCopy) / 38 ) - 3;
+                
+                if (gridValuesCopy[yValue][xValue] != -1 || xPositionCopy[i] + tetriminoXpositionCopy >= 494)
+                {
+                    return false; // piece wont rotate
+                }
+                
+            }
+        }
+        
+        for (int i = 0 ; i < 6; i ++)
+        {
+            xPosition[i] = xPositionCopy[i];
+            yPosition[i] = yPositionCopy[i];
+        }
+        
+        rotateCounter ++;
+        
+    }
     
+    else
+    {
+        for (int i = 0 ; i < 6; i ++)
+        {
+            xPosition[i] = xPositionCopy[i];
+            yPosition[i] = yPositionCopy[i];
+        }
+        rotateCounter ++;
+    }
+
     if (rotateCounter == 4) // If all rotations are complete this is reset
     {
         rotateCounter = 0;
     }
-
+    // delete pointers
+    return true;
+   
 }
 
-int Tetrimino::returnBlankSpace(int xAxisValue, int topOrbottom)
-{
-    int firstYvalue[2] =    {getHeight() - 38,0};
-    int secondYvalue[2] =   {getHeight() - 76,38};
 
-        for (int count = 0; count < 6; count ++)
-        {
-            if (xPosition[count] == xAxisValue && yPosition[count] == firstYvalue[topOrbottom]) // check each x position to see if its the bottom one starting from the left
-            {
-                if (tetriminoSquaresChecker[typeSelect][count] == 0)        // if it is, check to see if there is a blank space
-                {
-                    
-                    for (int counter = 0; counter < 6; counter ++)
-                    {
-                        if (xPosition[counter] == xAxisValue && yPosition[counter]  == secondYvalue[topOrbottom])// checks to see if there is an extra blank space above or below (only for L and J pieces this applies)
-                        {
-                            if (tetriminoSquaresChecker[typeSelect][counter] == 0)        // if it is, check to see if there is a blank space
-                            {
-                                return 76;
-                            }
-                        }
- 
-                    }
-    
-                    return 38; // if it doesn't find an space return just one space
-                }
-            }
-        }
-    
-    return 0;
-    
-}
+
+
 
 std::vector <int> Tetrimino::returnXposition(int tetriminoXposition, int width) // THIS DOESN'T NEED TO BE A VECTOR.
 {
@@ -226,8 +254,6 @@ void Tetrimino::paint(Graphics& g)
                 g.fillRect(xPosition[count], yPosition[count], 38, 38);
             }
         }
-
-        
     }
     
     

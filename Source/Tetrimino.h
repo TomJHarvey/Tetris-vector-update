@@ -23,8 +23,8 @@ public:
     
     void setType(int type);
     void paint (Graphics&) override;
-    void rotateShape(int type);
-    int returnBlankSpace(int xAxisValue, int topOrbottom);
+    bool rotateShape(int type);
+    void getGridInformation(std::vector<std::vector <int >> gridValues, int tetriminoXposition, int tetriminoYposition);
     std::vector <int> returnYposition(int tetriminoYposition, int width);
     std::vector <int> returnXposition(int tetriminoXposition, int width);
     
@@ -45,7 +45,10 @@ private:
     int iXdimensionsStanding[4] = {0,0,0,0};
     int iYdimensionsStanding[4] = {0,38,76,114};
    
-    
+    std::vector<std::vector <int >> gridValuesCopy;
+    int tetriminoXpositionCopy = 0;
+    int tetriminoYpositionCopy = 0;
+    bool firstRotation = true;
     
     int oXdimensions[4] = {0,38,0,38};
     int oYdimensions[4] = {0,0,38,38};
