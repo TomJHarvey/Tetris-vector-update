@@ -88,26 +88,11 @@ bool DrawTetrimino::updateDimensions(std::vector <int> xDimensions,std::vector<i
             }
             repaint();
             linesHaveBeenCleared = true;
-            
-            
-            
-            
+ 
         }
         
     }
-    
-    
-//    for (int i = 0; i < 21; i ++)
-//    {
-//        std::cout << "LINE = : " << i << std::endl << std::endl;
-//        
-//        for (int j = 0; j < 10; j ++)
-//        {
-//            std::cout << "GRID VALUES = " << gridValues[i][j] << std::endl;
-//        }
-//        
-//    }
-   
+ 
     repaint();
     
     if (linesHaveBeenCleared == false)

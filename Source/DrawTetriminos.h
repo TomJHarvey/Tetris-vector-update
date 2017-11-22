@@ -23,9 +23,7 @@ public:
     ~DrawTetrimino();
     bool updateDimensions(std::vector <int> xDimensions,std::vector<int> yDimensions, int type);
     void updateGrid(vector<vector <int>> &gridValuesReference);
-    
     void paint (Graphics&) override;
-
     
 private:
     

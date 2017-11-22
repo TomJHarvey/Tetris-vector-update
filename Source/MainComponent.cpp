@@ -14,9 +14,9 @@
 //==============================================================================
 MainContentComponent::MainContentComponent()
 {
-    setSize (608, 798);
+    setSize (608, 798);                             // The grid consists of sqaures 38 X 38
    
-    holdLabel.setText("Hold", sendNotification);
+    holdLabel.setText("Hold", sendNotification);    // drawn all lables and text
     addAndMakeVisible(holdLabel);
     nextLabel.setText("Next", sendNotification);
     addAndMakeVisible(nextLabel);
@@ -29,42 +29,30 @@ MainContentComponent::MainContentComponent()
     goalNumber.setText("10", sendNotification);
     addAndMakeVisible(goalNumber);
     
-    threadCounter.startCounter();   // Starts the counter// in the future select the level to chnage the speed
-    threadCounter.setSpeed(200); // Sets the speed for the first level
+    addAndMakeVisible(tetrimino);               // add the objects
+    addAndMakeVisible(drawTetrimino);
+    threadCounter.startCounter();               // Starts the counter in the future select the level to chnage the speed
+    threadCounter.setSpeed(200);                // Sets the speed for the first level
     threadCounter.setListener(this);
-
-    addAndMakeVisible(tetrimino);
-    
-    setWantsKeyboardFocus(true);
+    setWantsKeyboardFocus(true);                // Enable use of the keyboard
     addKeyListener(this);
-    getTopLevelComponent()->addKeyListener(this);
-    
 
-    for (int count = 0; count < 10; count ++)   // Set each height of each collum to the maxinum height
-    {
-        currentHeightOfColumn[count] = 798;
-    }
-    
-    addAndMakeVisible(drawTetrimino);           // Make the tetrimino piece visible
-    
+    currentXpositions.resize(4);                // resize vectors
+    currentYpositions.resize(4);
     gridValues.resize(21);                      // Make it hold 21 different vectors, which is one for each line
     
     for (int i = 0; i < gridValues.size(); i ++)
     {
-        gridValues[i].resize(10);               // Make each of the vectors have 10 items which makes each line 10 across.
+        gridValues[i].resize(10);               // Make each of the 21 gridValues vectors have 10 items which makes each line 10 across.
     }
     
     for (int i = 0; i < gridValues.size(); i ++)
     {
         for (int j = 0; j < gridValues[i].size(); j ++)
         {
-            gridValues[i][j] = -1;           // Sets each piece of the grid equal to 0
+            gridValues[i][j] = -1;              // Sets each piece of the grid equal to -1 so it has no 'tetrimino type'
         }
     }
-    
-    currentXpositions.resize(4);
-    currentYpositions.resize(4);
-    
 }
 
 MainContentComponent::~MainContentComponent()
@@ -75,238 +63,204 @@ MainContentComponent::~MainContentComponent()
 
 void MainContentComponent::counterChanged (int counterValue_)
 {
-  
-    if (canPieceFallFurther == false) // if the piece can't fall down any further it is drawn
+    if (canPieceFallFurther == false) // if the piece can't fall further
     {
-        bool haveLinesBeenCleared = drawTetrimino.updateDimensions(currentXpositions, currentYpositions, tetriminoType); // this needs to return something.
-        int xValue = 0;
-        int yValue = 0;
-        
-        if (haveLinesBeenCleared == false)
-        {
-
-            for (int i = 0 ; i < 4 ; i ++)
-            {
-                xValue = ((currentXpositions[i] / 38) - 3);
-                yValue = (currentYpositions[i] / 38);
-                gridValues[yValue][xValue] = tetriminoType;
-            }
-            
-        }
-        
-        else
-        {
-            drawTetrimino.updateGrid(gridValues);
-        }
- 
-        isPieceFalling = false; // once it is drawn this allows a new one to be created
-        canPieceFallFurther = true;
+        drawTetriminoOnGrid();  // draw the tetrimino
     }
     
-    if (isPieceFalling == false)
+    if (isPieceFalling == false)    // if the piece has fallen and been drawn
     {
-        
-        // When a piece isn't falling, a new a piece is created, all it will do here is create this piece, update it to falling and reset the aprotiate variables for a new piece.
-        // But we will be able to moveit left, right and down using the keyboard still.
-        // When a piece is created the 4 sqaures need to be added to the array in the position they are at relative to the main screen.
-        
-        isPieceFalling = true;                                          // Set the piece to be falling
-        pieceHasLanded = false;
-        numberOfSquaresFallen = 0;                                      // How many squares the piece has fallen is reset each time its a new piece
-        tetriminoType = randomTetrimino.nextInt(7);                     // A random tetrimino is selected
-        rotationCounter = 0;
-        currentTetriminoXposition = 304;
-       //tetriminoType = 4;
-        
-        if (tetriminoType != 0 || tetriminoType != 1)                   // Checks to see if the component has the correct default width and height
-        {
-            if (tetriminoWidthAndHeight[tetriminoType][0] == 76)                 // If they are incorrect they are swapped back to the default width and height
-            {
-                int sizeCopy = tetriminoWidthAndHeight[tetriminoType][0];
-                tetriminoWidthAndHeight[tetriminoType][0] = tetriminoWidthAndHeight[tetriminoType][1];
-                tetriminoWidthAndHeight[tetriminoType][1] = sizeCopy;
-            }
-        }
-        
-        // The width and height of the piece is drawn with the x position in the middle and the y at the top
-        tetrimino.setBounds(currentTetriminoXposition, 0, tetriminoWidthAndHeight[tetriminoType][0], tetriminoWidthAndHeight[tetriminoType][1]);
-        tetrimino.setType(tetriminoType);                                                                                       // The type is selected and in tetriminos paint function the piece is drawn.
-        currentXpositions = tetrimino.returnXposition(tetrimino.getX(), tetrimino.getWidth());
-        currentYpositions = tetrimino.returnYposition(tetrimino.getY(), tetrimino.getWidth());
-        
-        std::cout << "X size = " << currentXpositions.size() << std::endl;
-
+       createNewPiece();    // create a new piece
     }
     
-    else if (isPieceFalling == true) // If there is room for it to fall
+    else if (isPieceFalling == true) // if there is room for it to fall
     {
-        if (tetrimino.getY() + tetrimino.getHeight() <= 760)
+        if (tetrimino.getY() + tetrimino.getHeight() <= 760) // If the piece isn't below the grid
         {
-            moveTetrimino(38, 0);
+            moveTetrimino(38, 0);   // Move the piece down
         }
         else
         {
-            canPieceFallFurther = false;
+            canPieceFallFurther = false; // set the piece to unable to fall further
         }
-        
     }
 
-    if (pieceHasLanded == true)
-    {
+    if (pieceHasLanded == true){
         isPieceFalling = false;
     }
+}
+
+void MainContentComponent::createNewPiece()
+{
+    isPieceFalling = true;                                          // Set the piece to be falling
+    pieceHasLanded = false;                                         // Reset the piece to not have landed
+    numberOfSquaresFallen = 0;                                      // How many squares the piece has fallen is reset each time its a new piece
+    tetriminoType = randomTetrimino.nextInt(7);                     // A random tetrimino is selected
+    rotationCounter = 0;                                            // Reset the rotation counter
+    currentTetriminoXposition = 304;                                // Reset the piece to the middle
+    //tetriminoType = 4;                                            // Set type for testing purposes
     
+    if (tetriminoType != 0 || tetriminoType != 1)                   // Checks to see if the component has the correct default width and height
+    {
+        if (tetriminoWidthAndHeight[tetriminoType][0] == 76)        // If they are incorrect they are swapped back to the default width and height
+        {
+            int sizeCopy = tetriminoWidthAndHeight[tetriminoType][0];
+            tetriminoWidthAndHeight[tetriminoType][0] = tetriminoWidthAndHeight[tetriminoType][1];
+            tetriminoWidthAndHeight[tetriminoType][1] = sizeCopy;
+        }
+    }
+    
+    tetrimino.setBounds(currentTetriminoXposition, 0, tetriminoWidthAndHeight[tetriminoType][0], tetriminoWidthAndHeight[tetriminoType][1]);  // The tetrimino piece's position is set to the default
+    tetrimino.setType(tetriminoType);                                                      // The type is selected and in tetriminos paint function the piece is drawn.
+    currentXpositions = tetrimino.returnXposition(tetrimino.getX(), tetrimino.getWidth()); // When a piece is created the 4 sqaures need to be added to the array in the position they are at relative to the main screen.
+    currentYpositions = tetrimino.returnYposition(tetrimino.getY(), tetrimino.getWidth());
 }
 
 
 void MainContentComponent::moveTetrimino(int downIncrement, int leftOrRightIncrement)
 {
-
     int yValue = 0;
     int xValue = 0;
     bool tetriminoCanMove = true;
     
-//    std::cout << "X size = " << currentXpositions.size() << std::endl << std::endl;
-    
     for (int i = 0; i < 4; i ++)
     {
-        
         xValue = ((currentXpositions[i] / 38) - 3) + (leftOrRightIncrement/38);
         yValue = (currentYpositions[i] / 38) + (downIncrement/38);
         
-//        std::cout << i << ": X value = " << xValue << std::endl;
-//        std::cout << i << ": Y value = " << yValue << std::endl;
-        
-        
-        if (gridValues[yValue][xValue] != -1) // if there is a sqaure in that position
-        {
-            tetriminoCanMove = false;
+        if (yValue == 21) {
+            tetriminoCanMove = false;                       // this means that the value has exceeded the grid so it can't move any further
+            break;
         }
         
+        if (gridValues[yValue][xValue] != -1){              // if there is a sqaure in the same position the whole piece can't move
+            tetriminoCanMove = false;
+        }
     }
     
     if (tetriminoCanMove == true)
     {
-        
         currentTetriminoXposition += leftOrRightIncrement;  // move the piece left or right
         numberOfSquaresFallen += downIncrement;             // increase number of sqaures fallen.
         canPieceFallFurther = true;                         // update the piece to be falling because the piece may not have been able to fall before it was moved (left or right)
-        
-        // Apply the updated x or y position
-        
-        tetrimino.setBounds(currentTetriminoXposition, numberOfSquaresFallen, tetriminoWidthAndHeight[tetriminoType][0], tetriminoWidthAndHeight[tetriminoType][1]);
+        tetrimino.setBounds(currentTetriminoXposition, numberOfSquaresFallen, tetriminoWidthAndHeight[tetriminoType][0], tetriminoWidthAndHeight[tetriminoType][1]);// Apply the updated x or y position
     }
 
     else
     {
         canPieceFallFurther = false;
     }
+    
     currentXpositions = tetrimino.returnXposition(tetrimino.getX(), tetrimino.getWidth());  // Update the x and y positions each time a move has taken place
     currentYpositions = tetrimino.returnYposition(tetrimino.getY(), tetrimino.getWidth());
-
-    
 }
 
-
-
-
+void MainContentComponent::drawTetriminoOnGrid()
+{
+    bool haveLinesBeenCleared = drawTetrimino.updateDimensions(currentXpositions, currentYpositions, tetriminoType);    // Draws the new sqaures that have just been added
+    
+    if (haveLinesBeenCleared == false)                      // If no lines were cleared
+    {
+        int xValue = 0;
+        int yValue = 0;
+        
+        for (int i = 0 ; i < 4 ; i ++)
+        {
+            xValue = ((currentXpositions[i] / 38) - 3);     // The x position is scaled into a number from 0 - 9
+            yValue = (currentYpositions[i] / 38);           // The y position is scaled into a number between 0 - 21
+            gridValues[yValue][xValue] = tetriminoType;     // The grid values for these positions are now updated so a block is in this position. The type determines the colour.
+        }
+    }
+    
+    else
+    {
+        drawTetrimino.updateGrid(gridValues);               // If a 1 or more lines have been cleared the new positions in the grid are updated and moved in the vector.
+    }
+    
+    isPieceFalling = false;                                 // A new piece can now be created once it has been drawn
+    canPieceFallFurther = true;
+}
 
 bool MainContentComponent::keyPressed(const KeyPress &key, Component* originatingComponent )
 {
+    DBG(key.getKeyCode());
     
-     DBG(key.getKeyCode());
-    
-    // Move tetrimino to the left
-    if (key.getKeyCode() == 63234)
+    if (key.getKeyCode() == 63234)                              // Move tetrimino to the left
     {
-        if (currentTetriminoXposition >= 152)
-        {
+        if (currentTetriminoXposition >= 152){
             moveTetrimino(0, -38);
         }
     }
     
-    // Move the tetrimino to the right
-    else if (key.getKeyCode() == 63235)
+    else if (key.getKeyCode() == 63235)                         // Move the tetrimino to the right
     {
-        if (currentTetriminoXposition + tetriminoWidthAndHeight[tetriminoType][0] <= 456)
-        {
+        if (currentTetriminoXposition + tetriminoWidthAndHeight[tetriminoType][0] <= 456){
             moveTetrimino(0, 38);
         }
     }
     
-    // Move tetrimino down
-    else if (key.getKeyCode() == 63233)
+    else if (key.getKeyCode() == 63233)                         // Move tetrimino down
     {
-        if (tetrimino.getY() + tetrimino.getHeight() <= 760)
-        {
+        if (tetrimino.getY() + tetrimino.getHeight() <= 760){   // If the piece is not outside of the grid
             moveTetrimino(38, 0);
         }
         
         else
-        {
             canPieceFallFurther = false;
+        
+    }
+    
+    else if (key.getKeyCode() == 32)                            // Hard drop
+    {
+        while (canPieceFallFurther == true){
+            moveTetrimino(38, 0);
         }
     }
     
-    // Rotate the shape
-    else if (key.getKeyCode() == 63232)                 // Make it so this works properly and only rotates shapes if it has the room too, also make sure number of squares fallen isn't timesd *
+    else if (key.getKeyCode() == 63232)
     {
-        if (tetriminoType != 1)
-        {
-            int xOffset = 0;
-            int yOffset = 0;
-            rotationCounter ++;
-            
-            if (rotationCounter == 4)
-            {
-                rotationCounter = 0;
-            }
-            
-            else if (rotationCounter == 1)  // When a piece rotates it has a different x position for both of the horizontal instances of the rotation, these if loops set this.
-            {
-                xOffset = 38;
-            }
-            
-            if (rotationCounter == 1 || rotationCounter == 3)
-            {
-                yOffset = - 38;
-            }
+        if (tetriminoType != 1) {
+            rotateTetrimino();
+        }
+    }
+}
 
+
+void MainContentComponent::rotateTetrimino()
+{
+        int xOffset = 0;
+        int yOffset = 0;
+        rotationCounter ++;
         
-
-            tetrimino.getGridInformation(gridValues, tetrimino.getX(), tetrimino.getY());
-            
-            if (tetrimino.rotateShape(tetriminoType) == true)
-            {
-                int sizeCopy0 = tetriminoWidthAndHeight[tetriminoType][0];                        // this swaps the width and the height values around
-                int sizeCopy1 = tetriminoWidthAndHeight[tetriminoType][1];
-                tetriminoWidthAndHeight[tetriminoType][0] = sizeCopy1;
-                tetriminoWidthAndHeight[tetriminoType][1] = sizeCopy0;
-                tetrimino.setBounds(currentTetriminoXposition + xOffset, (numberOfSquaresFallen) + yOffset, tetriminoWidthAndHeight[tetriminoType][0], tetriminoWidthAndHeight[tetriminoType][1]);
-                currentXpositions = tetrimino.returnXposition(tetrimino.getX(), tetrimino.getWidth());  // Update the x and y positions each time a move has taken place
-                currentYpositions = tetrimino.returnYposition(tetrimino.getY(), tetrimino.getWidth());
-            }
+        if (rotationCounter == 4)
+        {
+            rotationCounter = 0;
         }
         
-    }
- 
+        else if (rotationCounter == 1)  // When a piece rotates it has a different x position for both of the horizontal instances of the rotation, these if loops set this.
+        {
+            xOffset = 38;
+        }
+        
+        if (rotationCounter == 1 || rotationCounter == 3)
+        {
+            yOffset = - 38;
+        }
+        
+        tetrimino.getGridInformation(gridValues, tetrimino.getX(), tetrimino.getY());
+        
+        if (tetrimino.rotateShape(tetriminoType) == true)
+        {
+            int sizeCopy0 = tetriminoWidthAndHeight[tetriminoType][0];                        // this swaps the width and the height values around
+            int sizeCopy1 = tetriminoWidthAndHeight[tetriminoType][1];
+            tetriminoWidthAndHeight[tetriminoType][0] = sizeCopy1;
+            tetriminoWidthAndHeight[tetriminoType][1] = sizeCopy0;
+            tetrimino.setBounds(currentTetriminoXposition + xOffset, (numberOfSquaresFallen) + yOffset, tetriminoWidthAndHeight[tetriminoType][0], tetriminoWidthAndHeight[tetriminoType][1]);
+            currentXpositions = tetrimino.returnXposition(tetrimino.getX(), tetrimino.getWidth());  // Update the x and y positions each time a move has taken place
+            currentYpositions = tetrimino.returnYposition(tetrimino.getY(), tetrimino.getWidth());
+        }
 }
 
-void MainContentComponent::updateRows()
-{
-
-}
-
-void MainContentComponent::updateHeightOfColumns()
-{
-
- 
-}
-
-void MainContentComponent::checkAvailableSpaceForTetrimino()
-{
-
-}
 
 void MainContentComponent::resetSequence(int buttonType_)
 {

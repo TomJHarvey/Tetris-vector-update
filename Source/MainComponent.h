@@ -28,17 +28,16 @@ public:
     //==============================================================================
     MainContentComponent();
     ~MainContentComponent();
-
     void paint (Graphics&) override;
     void resized() override;
-    void updateRows();
-    void updateHeightOfColumns();
-    void checkAvailableSpaceForTetrimino();
     void moveTetrimino(int downIncrement, int leftOrRightIncrement);
+    void createNewPiece();
+    void drawTetriminoOnGrid();
+    void rotateTetrimino();
+    
     
     /** Updates the sequence based on the main thread counter position.*/
     void counterChanged (int counterValue_) override;
-    
     /** Resets the sequence when the stop button is pressed.*/
     void resetSequence(int buttonType_) override;
     bool keyPressed(const KeyPress &key, Component* originatingComponent ) override;
@@ -48,18 +47,29 @@ private:
     int lineSpace = 38;
     Path horizontalLines[16];
     Path verticalLines[21];
-    
     Label holdLabel;
     Label nextLabel;
     Label levelLabel;
     Label goalLabel;
     Label levelNumber;
     Label goalNumber;
-    
     Counter threadCounter;
     Tetrimino tetrimino;
     DrawTetrimino drawTetrimino;
-
+    Random randomTetrimino;     // generates the random tetrimino type
+    int tetriminoCounter = 0;   // the number of the current tetrimino
+    int fallingCounter = 0;     // how many sqaures the current tetrimino has fallen
+    int tetriminoType = 0;
+    int numberOfSquaresFallen = 0;
+    int currentTetriminoXposition = 0;
+    int rotationCounter = 0; // This is used to offset the tetrimino if it on its 4th rotation.
+    bool isPieceFalling = false;    // keeps track if a piece is falling
+    bool pieceHasLanded = false;    // is true when a piece has landed which resets and creates a new piece.
+    bool canPieceFallFurther = true;
+    std::vector <int> currentXpositions;
+    std::vector <int> currentYpositions;
+    vector<vector <int>> gridValues;
+    
     int tetriminoWidthAndHeight[7][2] = {
         
         {152,38},   // i
@@ -83,34 +93,6 @@ private:
     };
     
     
-    
-
-    std::vector <int> currentXpositions;
-    std::vector <int> currentYpositions;
-    
-    int tetriminoCounter = 0;   // the number of the current tetrimino
-    int fallingCounter = 0;     // how many sqaures the current tetrimino has fallen
-    Random randomTetrimino;     // generates the random tetrimino type
-    int tetriminoType = 0;
-    int numberOfSquaresFallen = 0;
-    int currentTetriminoXposition = 0;
-    int rotationCounter = 0; // This is used to offset the tetrimino if it on its 4th rotation.
-    
-    bool isPieceFalling = false;    // keeps track if a piece is falling
-    bool pieceHasLanded = false;    // is true when a piece has landed which resets and creates a new piece.
-    bool canPieceFallFurther = true;
-    
-    int testCounter = 0;
-    
-    int currentHeightOfColumn[10] = {0};     // For each collum the current height
-    int currentPositionOfTetrimino[4] = {0};
-    int currentTetriminoLimit[4] = {0};
-    int blankSquaresX[2] = {0};
-    int blankSquaresY[2] = {0};
-    int blankSpaceIncrement[4] = {0,38,76,114};
-    
-    
-    vector<vector <int>> gridValues;
     
     
     //==============================================================================
