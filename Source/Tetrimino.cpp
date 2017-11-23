@@ -23,12 +23,14 @@ Tetrimino::~Tetrimino()
     
 }
 
-void Tetrimino::setType(int type)
+void Tetrimino::setType(int type, int size)
 {
     typeSelect = type;
+    squareSize = size;
     rotateCounter = 0;
     firstRotation = true;
     rotateShape(typeSelect);
+    
     
 }
 void Tetrimino::getGridInformation(std::vector<std::vector <int >> gridValues, int tetriminoXposition, int tetriminoYposition)
@@ -63,11 +65,13 @@ bool Tetrimino::rotateShape(int type)
     {
         xOrYpointerStatic = yPositionCopy;
         xOrYpointerMoving = xPositionCopy;
+        widthForIblock = 0;
     }
     else
     {
         xOrYpointerStatic = xPositionCopy;
         xOrYpointerMoving = yPositionCopy;
+        widthForIblock = 1;
     }
 
     for (int count = 0; count < 6; count ++ )   // Writes the cordiantes for each sqaure
@@ -129,6 +133,8 @@ bool Tetrimino::rotateShape(int type)
     {
         rotateCounter = 0;
     }
+    
+    repaint();
     // delete pointers
     return true;
    
@@ -220,38 +226,48 @@ std::vector <int> Tetrimino::returnYposition(int tetriminoYposition, int width)
         }
     }
     
-    
     return yPositions;
-    
-    
-    
 }
-
-
-
-
-
 
 
 void Tetrimino::paint(Graphics& g)
 {
+    g.setColour(tetriminoColorus[typeSelect]);
     
-    if (typeSelect == 0 || typeSelect == 1 )
+    if (typeSelect == 0)
     {
-        g.fillAll(tetriminoColorus[typeSelect]); // i or o tetrimino require no shaping here
+        for (int i = 0; i < 4; i ++)
+        {
+            if (widthForIblock == 0)
+            {
+                g.drawRect(iXdimensionsFlat[i]/squareSize, iYdimensionsFlat[i]/squareSize, 38/squareSize, 38/squareSize);
+                g.fillRect(iXdimensionsFlat[i]/squareSize, iYdimensionsFlat[i]/squareSize, 38/squareSize, 38/squareSize);
+            }
+            else if (widthForIblock == 1)
+            {
+                g.drawRect(iXdimensionsStanding[i]/squareSize, iYdimensionsStanding[i]/squareSize, 38/squareSize, 38/squareSize);
+                g.fillRect(iXdimensionsStanding[i]/squareSize, iYdimensionsStanding[i]/squareSize, 38/squareSize, 38/squareSize);
+            }
+        }
+    }
+    
+    else if (typeSelect == 1)
+    {
+        for (int i = 0; i < 4; i ++)
+        {
+            g.drawRect(oXdimensions[i]/squareSize, oYdimensions[i]/squareSize, 38/squareSize, 38/squareSize);
+            g.fillRect(oXdimensions[i]/squareSize, oYdimensions[i]/squareSize, 38/squareSize, 38/squareSize);
+        }
     }
     
     else // the remaining tetriminos are shaped
     {
-        g.setColour(tetriminoColorus[typeSelect]);
-        
         for (int count = 0; count < 6; count ++ )
         {
             if (tetriminoSquaresChecker[typeSelect][count] == 1) // If there is a sqaure at this position
             {
-                g.setColour(tetriminoColorus[typeSelect]);
-                g.drawRect(xPosition[count], yPosition[count], 38, 38);
-                g.fillRect(xPosition[count], yPosition[count], 38, 38);
+                g.drawRect(xPosition[count]/squareSize, yPosition[count]/squareSize, 38/squareSize, 38/squareSize);
+                g.fillRect(xPosition[count]/squareSize, yPosition[count]/squareSize, 38/squareSize, 38/squareSize);
             }
         }
     }

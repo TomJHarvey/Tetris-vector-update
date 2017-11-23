@@ -14,6 +14,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 
 
+
 class Tetrimino: public Component
 {
 public:
@@ -21,7 +22,7 @@ public:
     Tetrimino();
     ~Tetrimino();
     
-    void setType(int type);
+    void setType(int type, int size);
     void paint (Graphics&) override;
     bool rotateShape(int type);
     void getGridInformation(std::vector<std::vector <int >> gridValues, int tetriminoXposition, int tetriminoYposition);
@@ -39,20 +40,23 @@ private:
     int xOrYcordintates[3] = {0,38,76};         // The cordinates for the row or collum
     int xOrYdirection[4] = {1,1,-1,-1};         // The direction that the above x or y cordiates are drawn
     int xOrYstartPos[4] = {0,0,2,2};            // If it starts at the highest or lowest value for the x or y
+    int squareSize = 0;
+    int widthForIblock = 0;
     
     int iXdimensionsFlat[4] = {0,38,76,114};
     int iYdimensionsFlat[4] = {0,0,0,0};
     int iXdimensionsStanding[4] = {0,0,0,0};
     int iYdimensionsStanding[4] = {0,38,76,114};
+    int oXdimensions[4] = {0,38,0,38};
+    int oYdimensions[4] = {0,0,38,38};
+    
    
     std::vector<std::vector <int >> gridValuesCopy;
     int tetriminoXpositionCopy = 0;
     int tetriminoYpositionCopy = 0;
     bool firstRotation = true;
     
-    int oXdimensions[4] = {0,38,0,38};
-    int oYdimensions[4] = {0,0,38,38};
-    
+
     Colour tetriminoColorus[7] =
     {
         Colours::lightskyblue,

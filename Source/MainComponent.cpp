@@ -31,6 +31,11 @@ MainContentComponent::MainContentComponent()
     
     addAndMakeVisible(tetrimino);               // add the objects
     addAndMakeVisible(drawTetrimino);
+    addAndMakeVisible(nextTetriminos[0]);
+    addAndMakeVisible(nextTetriminos[1]);
+    addAndMakeVisible(nextTetriminos[2]);
+    addAndMakeVisible(nextTetriminos[3]);
+    addAndMakeVisible(nextTetriminos[4]);
     threadCounter.startCounter();               // Starts the counter in the future select the level to chnage the speed
     threadCounter.setSpeed(200);                // Sets the speed for the first level
     threadCounter.setListener(this);
@@ -67,10 +72,10 @@ void MainContentComponent::counterChanged (int counterValue_)
     {
         drawTetriminoOnGrid();  // draw the tetrimino
     }
-    
+
     if (isPieceFalling == false)    // if the piece has fallen and been drawn
     {
-       createNewPiece();    // create a new piece
+        createNewPiece();    // create a new piece
     }
     
     else if (isPieceFalling == true) // if there is room for it to fall
@@ -95,10 +100,33 @@ void MainContentComponent::createNewPiece()
     isPieceFalling = true;                                          // Set the piece to be falling
     pieceHasLanded = false;                                         // Reset the piece to not have landed
     numberOfSquaresFallen = 0;                                      // How many squares the piece has fallen is reset each time its a new piece
-    tetriminoType = randomTetrimino.nextInt(7);                     // A random tetrimino is selected
     rotationCounter = 0;                                            // Reset the rotation counter
     currentTetriminoXposition = 304;                                // Reset the piece to the middle
-    //tetriminoType = 4;                                            // Set type for testing purposes
+    
+    if (holdPiece != true)                                          // If the piece is not retrieved from the hold
+    {
+        randomTetrimino();
+    }
+    else
+    {
+        if (firstTimeHold == true)                                  // If its the first time it is held, it creates a random piece
+        {
+            firstTimeHold = false;
+            holdPiece = false;
+            holdTetrimino = tetriminoType;
+            randomTetrimino();
+        }
+        
+        else                                                        // If it has been held before, it swaps the current piece with the last hold piece.
+        {
+            int copy = tetriminoType;
+            tetriminoType = holdTetrimino;
+            holdTetrimino = copy;
+            holdPiece = false;
+        }
+    }
+    
+    tetriminoType = 0;                                            // Set type for testing purposes
     
     if (tetriminoType != 0 || tetriminoType != 1)                   // Checks to see if the component has the correct default width and height
     {
@@ -111,11 +139,71 @@ void MainContentComponent::createNewPiece()
     }
     
     tetrimino.setBounds(currentTetriminoXposition, 0, tetriminoWidthAndHeight[tetriminoType][0], tetriminoWidthAndHeight[tetriminoType][1]);  // The tetrimino piece's position is set to the default
-    tetrimino.setType(tetriminoType);                                                      // The type is selected and in tetriminos paint function the piece is drawn.
+    tetrimino.setType(tetriminoType, 1);                                                      // The type is selected and in tetriminos paint function the piece is drawn.
     currentXpositions = tetrimino.returnXposition(tetrimino.getX(), tetrimino.getWidth()); // When a piece is created the 4 sqaures need to be added to the array in the position they are at relative to the main screen.
     currentYpositions = tetrimino.returnYposition(tetrimino.getY(), tetrimino.getWidth());
 }
 
+void MainContentComponent::randomTetrimino()
+{
+    // When selecting a random piece it has twelve attempts but can can only select the same piece twice, seeing as there are 14 tetriminos, this means that
+    
+    int rand = 0;
+    
+    if (firstTimeRandom == true)
+    {
+        for (int i = 0; i < 6; i ++)    // resizes the vector to 6 values and adds the first 6 to the array.
+        {
+            rand = random.nextInt(7);
+            
+            if (tetriiminoRandomTypes[rand] == 2)           // if this tetrimino has aleady been selected twice, it selects another
+            {
+                while (tetriiminoRandomTypes[rand] == 2)
+                {
+                    rand = random.nextInt(7);
+                }
+            }
+            
+            tetriiminoRandomTypes[rand] ++;                 // increase the counter for the selected piece
+            randomPieces.push_back(rand);                   // add each piece to the vector
+            tetriminoRandomCounter ++;
+            std::cout << "random piece = " << rand << std::endl;
+        }
+        
+        tetriminoType = randomPieces[0];
+            firstTimeRandom = false;
+    }
+    else
+    {
+        rand = random.nextInt(7);
+        
+        if (tetriiminoRandomTypes[rand] == 2)           // if this tetrimino has aleady been selected twice, it selects another
+        {
+            while (tetriiminoRandomTypes[rand] == 2)
+            {
+                rand = random.nextInt(7);
+            }
+        }
+        
+        tetriiminoRandomTypes[rand] ++;
+        tetriminoRandomCounter ++;
+        randomPieces.erase(randomPieces.begin());   // remove the first item in the array
+        randomPieces.push_back(rand);               // add the latest item to the end
+        tetriminoType = randomPieces[0];
+        
+        if (tetriminoRandomCounter == 12)   // the counter is reset
+        {
+            tetriminoRandomCounter = 0;
+            
+            for (int i = 0; i < 12; i ++){                      // the twelve values are reset for next time
+                tetriiminoRandomTypes[i] = 0;
+            }
+        }
+  
+    }
+    
+    drawNextTetriminos();
+}
 
 void MainContentComponent::moveTetrimino(int downIncrement, int leftOrRightIncrement)
 {
@@ -183,7 +271,7 @@ void MainContentComponent::drawTetriminoOnGrid()
 
 bool MainContentComponent::keyPressed(const KeyPress &key, Component* originatingComponent )
 {
-    DBG(key.getKeyCode());
+     DBG(key.getKeyCode());
     
     if (key.getKeyCode() == 63234)                              // Move tetrimino to the left
     {
@@ -223,6 +311,12 @@ bool MainContentComponent::keyPressed(const KeyPress &key, Component* originatin
             rotateTetrimino();
         }
     }
+    
+    else if (key.getKeyCode() == 96)
+    {
+        isPieceFalling = false;
+        holdPiece = true;
+    }
 }
 
 
@@ -261,6 +355,22 @@ void MainContentComponent::rotateTetrimino()
         }
 }
 
+void MainContentComponent::drawNextTetriminos()
+{
+    
+//    nextTetriminos[0].setType(randomPieces[1], 2);
+//    nextTetriminos[0].setBounds(520, 48, 70, 70);
+//    nextTetriminos[1].setType(randomPieces[2], 2);
+//    nextTetriminos[1].setBounds(515, 148, 70, 70);
+//    nextTetriminos[2].setType(randomPieces[3], 2);
+//    nextTetriminos[2].setBounds(515, 248, 70, 70);
+//    nextTetriminos[3].setType(randomPieces[4], 2);
+//    nextTetriminos[3].setBounds(515, 348, 70, 70);
+//    nextTetriminos[4].setType(randomPieces[5], 2);
+//    nextTetriminos[4].setBounds(515, 448, 70, 70);
+
+    
+}
 
 void MainContentComponent::resetSequence(int buttonType_)
 {
@@ -308,18 +418,19 @@ void MainContentComponent::paint (Graphics& g)
     g.drawRect(17, 40, 80, 80);
     g.fillRect(17, 40, 80, 80);
     
-    // Next
-    g.drawRect(511, 40, 80, 80);    // Box 1
-    g.fillRect(511, 40, 80, 80);
-    g.drawRect(522, 140, 60, 60);   // Box 2
-    g.fillRect(522, 140, 60, 60);
-    g.drawRect(522, 210, 60, 60);   // Box 3
-    g.fillRect(522, 210, 60, 60);
-    g.drawRect(522, 280, 60, 60);   // Box 4
-    g.fillRect(522, 280, 60, 60);
-    g.drawRect(522, 350, 60, 60);   // Box 5
-    g.fillRect(522, 350, 60, 60);
-    
+//    // Next
+//    g.drawRect(511, 40, 80, 80);    // Box 1
+//    g.fillRect(511, 40, 80, 80);
+//    g.drawRect(511, 140, 80, 80);    // Box 1
+//    g.fillRect(511, 140, 80, 80);
+//    g.drawRect(511, 240, 80, 80);    // Box 1
+//    g.fillRect(511, 240, 80, 80);
+//    g.drawRect(511, 340, 80, 80);    // Box 1
+//    g.fillRect(511, 340, 80, 80);
+//    g.drawRect(511, 440, 80, 80);    // Box 1
+//    g.fillRect(511, 440, 80, 80);
+
+
 }
 
 void MainContentComponent::resized()

@@ -34,6 +34,8 @@ public:
     void createNewPiece();
     void drawTetriminoOnGrid();
     void rotateTetrimino();
+    void randomTetrimino();
+    void drawNextTetriminos();
     
     
     /** Updates the sequence based on the main thread counter position.*/
@@ -56,16 +58,25 @@ private:
     Counter threadCounter;
     Tetrimino tetrimino;
     DrawTetrimino drawTetrimino;
-    Random randomTetrimino;     // generates the random tetrimino type
-    int tetriminoCounter = 0;   // the number of the current tetrimino
-    int fallingCounter = 0;     // how many sqaures the current tetrimino has fallen
+    Tetrimino nextTetriminos[5];
+    Random random;                      // generates the random tetrimino type
+    int tetriminoRandomCounter = 0;
+    int tetriiminoRandomTypes[7] = {0};
+    int randomTetriminos[12] = {0};
+    int tetriminoCounter = 0;           // the number of the current tetrimino
+    int fallingCounter = 0;             // how many sqaures the current tetrimino has fallen
     int tetriminoType = 0;
     int numberOfSquaresFallen = 0;
     int currentTetriminoXposition = 0;
-    int rotationCounter = 0; // This is used to offset the tetrimino if it on its 4th rotation.
-    bool isPieceFalling = false;    // keeps track if a piece is falling
-    bool pieceHasLanded = false;    // is true when a piece has landed which resets and creates a new piece.
+    int rotationCounter = 0;            // This is used to offset the tetrimino if it on its 4th rotation.
+    bool isPieceFalling = false;        // keeps track if a piece is falling
+    bool pieceHasLanded = false;        // is true when a piece has landed which resets and creates a new piece.
     bool canPieceFallFurther = true;
+    bool holdPiece = false;
+    bool firstTimeHold = true;
+    bool firstTimeRandom = true;
+    int holdTetrimino = 0;
+    std::vector <int> randomPieces;
     std::vector <int> currentXpositions;
     std::vector <int> currentYpositions;
     vector<vector <int>> gridValues;
