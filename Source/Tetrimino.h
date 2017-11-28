@@ -29,8 +29,7 @@ public:
     bool checkForRotatedShapeHittingOtherSqaures();
     void addCordinatesForThreeByTwoShapes();
     void getGridInformation(std::vector<std::vector <int >> gridValues, int tetriminoXposition, int tetriminoYposition);
-    std::vector <int> returnYposition(int tetriminoYposition, int width);
-    std::vector <int> returnXposition(int tetriminoXposition, int width);
+    std::vector <int> returnXorYPositions(int tetriminoXorYPosition, int widthOrHeight, int type);
     
    
 private:

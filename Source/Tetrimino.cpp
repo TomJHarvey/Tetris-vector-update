@@ -205,29 +205,27 @@ void Tetrimino::addCordinatesForThreeByTwoShapes()
     }
 }
 
-std::vector <int> Tetrimino::returnXposition(int tetriminoXposition, int width) // THIS DOESN'T NEED TO BE A VECTOR.
+std::vector <int> Tetrimino::returnXorYPositions(int tetriminoXorYPosition, int widthOrHeight, int type)
 {
-    std::vector<int> xPositions;
+    int* XorYpositionsPointer = nullptr;
+    std::vector<int> XorYpositions;
+    
+    if (type == 0)
+    {
+        XorYpositionsPointer = xPosition;
+    }
+    else
+    {
+        XorYpositionsPointer = yPosition;
+    }
     
     for (int count = 0; count < 4; count ++)
     {
-        xPositions.push_back(xPosition[count] + tetriminoXposition);
-    }
-    return xPositions;
-}
-
-
-
-std::vector <int> Tetrimino::returnYposition(int tetriminoYposition, int width)
-{
-    std::vector<int> yPositions;
-    
-    for (int count = 0; count < 4; count ++)
-    {
-        yPositions.push_back(yPosition[count] + tetriminoYposition);
+        XorYpositions.push_back(XorYpositionsPointer[count] + tetriminoXorYPosition);
     }
     
-    return yPositions;
+    XorYpositionsPointer = nullptr;
+    return XorYpositions;
 }
 
 
