@@ -28,7 +28,6 @@ MainContentComponent::MainContentComponent()
     addAndMakeVisible(levelNumber);
     goalNumber.setText("10", sendNotification);
     addAndMakeVisible(goalNumber);
-    
     addAndMakeVisible(tetrimino);               // add the objects
     addAndMakeVisible(drawTetrimino);
     addAndMakeVisible(nextTetriminos[0]);
@@ -128,16 +127,15 @@ void MainContentComponent::createNewPiece()
     
     tetriminoType = 0;                                            // Set type for testing purposes
     
-    if (tetriminoType != 0 || tetriminoType != 1)                   // Checks to see if the component has the correct default width and height
-    {
-        if (tetriminoWidthAndHeight[tetriminoType][0] == 76)        // If they are incorrect they are swapped back to the default width and height
-        {
-            int sizeCopy = tetriminoWidthAndHeight[tetriminoType][0];
-            tetriminoWidthAndHeight[tetriminoType][0] = tetriminoWidthAndHeight[tetriminoType][1];
-            tetriminoWidthAndHeight[tetriminoType][1] = sizeCopy;
-        }
-    }
+                                                                  // Checks to see if the component has the correct default width and height
     
+    if (tetriminoWidthAndHeight[tetriminoType][0] == 76 || tetriminoWidthAndHeight[tetriminoType][0] == 38)        // If they are incorrect they are swapped back to the default width and height
+    {
+        int sizeCopy = tetriminoWidthAndHeight[tetriminoType][0];
+        tetriminoWidthAndHeight[tetriminoType][0] = tetriminoWidthAndHeight[tetriminoType][1];
+        tetriminoWidthAndHeight[tetriminoType][1] = sizeCopy;
+    }
+
     tetrimino.setBounds(currentTetriminoXposition, 0, tetriminoWidthAndHeight[tetriminoType][0], tetriminoWidthAndHeight[tetriminoType][1]);  // The tetrimino piece's position is set to the default
     tetrimino.setType(tetriminoType, 1);                                                      // The type is selected and in tetriminos paint function the piece is drawn.
     currentXpositions = tetrimino.returnXposition(tetrimino.getX(), tetrimino.getWidth()); // When a piece is created the 4 sqaures need to be added to the array in the position they are at relative to the main screen.
@@ -163,11 +161,11 @@ void MainContentComponent::randomTetrimino()
                     rand = random.nextInt(7);
                 }
             }
-            
-            tetriiminoRandomTypes[rand] ++;                 // increase the counter for the selected piece
-            randomPieces.push_back(rand);                   // add each piece to the vector
             tetriminoRandomCounter ++;
-            std::cout << "random piece = " << rand << std::endl;
+            tetriiminoRandomTypes[rand] ++;                 // increase the counter for the selected piece
+            
+            randomPieces.push_back(rand);                   // add each piece to the vector
+            
         }
         
         tetriminoType = randomPieces[0];
@@ -295,7 +293,6 @@ bool MainContentComponent::keyPressed(const KeyPress &key, Component* originatin
         
         else
             canPieceFallFurther = false;
-        
     }
     
     else if (key.getKeyCode() == 32)                            // Hard drop
@@ -360,24 +357,13 @@ void MainContentComponent::drawNextTetriminos()
     
 //    nextTetriminos[0].setType(randomPieces[1], 2);
 //    nextTetriminos[0].setBounds(520, 48, 70, 70);
-//    nextTetriminos[1].setType(randomPieces[2], 2);
-//    nextTetriminos[1].setBounds(515, 148, 70, 70);
-//    nextTetriminos[2].setType(randomPieces[3], 2);
-//    nextTetriminos[2].setBounds(515, 248, 70, 70);
-//    nextTetriminos[3].setType(randomPieces[4], 2);
-//    nextTetriminos[3].setBounds(515, 348, 70, 70);
-//    nextTetriminos[4].setType(randomPieces[5], 2);
-//    nextTetriminos[4].setBounds(515, 448, 70, 70);
 
-    
 }
 
 void MainContentComponent::resetSequence(int buttonType_)
 {
     // this is called when the counter needs to start again, so when the game is over, or if its paused it will start from where it left off
-    
     // change the arugments for both counter ones
-    
 }
 
 
@@ -418,18 +404,9 @@ void MainContentComponent::paint (Graphics& g)
     g.drawRect(17, 40, 80, 80);
     g.fillRect(17, 40, 80, 80);
     
-//    // Next
-//    g.drawRect(511, 40, 80, 80);    // Box 1
-//    g.fillRect(511, 40, 80, 80);
-//    g.drawRect(511, 140, 80, 80);    // Box 1
-//    g.fillRect(511, 140, 80, 80);
-//    g.drawRect(511, 240, 80, 80);    // Box 1
-//    g.fillRect(511, 240, 80, 80);
-//    g.drawRect(511, 340, 80, 80);    // Box 1
-//    g.fillRect(511, 340, 80, 80);
-//    g.drawRect(511, 440, 80, 80);    // Box 1
-//    g.fillRect(511, 440, 80, 80);
-
+    // Next tetrimino 
+    g.drawRect(511, 40, 80, 80);
+    g.fillRect(511, 40, 80, 80);
 
 }
 

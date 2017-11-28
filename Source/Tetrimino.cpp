@@ -25,165 +25,194 @@ Tetrimino::~Tetrimino()
 
 void Tetrimino::setType(int type, int size)
 {
-    typeSelect = type;
-    squareSize = size;
+    typeSelect = type;          // set the type
+    squareSize = size;          // the square size can vary depending on if its a playing piece or as a hold or next piece
     rotateCounter = 0;
-    firstRotation = true;
-    rotateShape(typeSelect);
     
+    if (typeSelect == 0 || typeSelect == 1)
+    {
+        typeOfTetriminoForLoopSize = 4;
+    }
+    else
+    {
+        typeOfTetriminoForLoopSize = 6;
+    }
     
+    if (typeSelect != 1)        // if this is not an o piece
+    {
+        rotateCounter = 0;
+        firstRotation = true;
+        rotateShape(typeSelect);    // the first time rotate shape is called, it draws the shape
+    }
+    
+    else                            // This sets the positions for the o piece as it will never change.
+    {
+        for (int i = 0; i < 4; i ++)
+        {
+            xPosition[i] = oXdimensions[i];
+            yPosition[i] = oYdimensions[i];
+        }
+    }
+
 }
 void Tetrimino::getGridInformation(std::vector<std::vector <int >> gridValues, int tetriminoXposition, int tetriminoYposition)
 {
-    gridValuesCopy = gridValues;
+    gridValuesCopy = gridValues;                    // This copy contains all the infromtation for where sqauares are and what type they are
     firstRotation = false;
-    tetriminoXpositionCopy = tetriminoXposition;
+    tetriminoXpositionCopy = tetriminoXposition;    // The current X and Y position of the tetrimino is copied in
     tetriminoYpositionCopy = tetriminoYposition;
 }
 
 bool Tetrimino::rotateShape(int type)
 {
-
-    // Every shape apart from i and o are made up of 4 squares and two blank squares.
-    // This function keeps the order of the squares and makes it so each square keeps its value when it is rotated.
+    setPositionOfRotatedSqaures();          // The x and y positions of each sqaure in the rotated piece are set into temporary variables.
     
-    // In each rotation either X or Y is static or moving.
-    // Static is if it has only two different values
-    // Moving is if it has three different values
-    // For example  X was static and Y was moving, this would mean the same x axis is used for three different y values. Then the next x value along the axis is used for the same three y values.
-
-    int rowIncrement = 0;
-    int increment = xOrYstartPos[rotateCounter];
-    int* xOrYpointerStatic = nullptr;
-    int* xOrYpointerMoving = nullptr;
-    
-    int xPositionCopy[6] = {0};
-    int yPositionCopy[6] = {0};
-    
-   
-    if (rotateCounter == 0 || rotateCounter == 2)
+    if (firstRotation == true)              // if this the first time
     {
-        xOrYpointerStatic = yPositionCopy;
-        xOrYpointerMoving = xPositionCopy;
-        widthForIblock = 0;
-    }
-    else
-    {
-        xOrYpointerStatic = xPositionCopy;
-        xOrYpointerMoving = yPositionCopy;
-        widthForIblock = 1;
-    }
-
-    for (int count = 0; count < 6; count ++ )   // Writes the cordiantes for each sqaure
-    {
-        
-                if (count == 3 )                                    // Re sets the row or collum that it is counting through
-                {
-                    rowIncrement = (rotateCounter + 1);             // Choses the next value for the row select array
-                    increment = xOrYstartPos[rotateCounter];
-                }
-                
-                xOrYpointerStatic[count] = rowSelect[rotateCounter + rowIncrement];
-                xOrYpointerMoving[count] = xOrYcordintates[increment];
-                increment += xOrYdirection[rotateCounter];
-    }
-
-    if (firstRotation == false) // if this is not the first time
-    {
-
-        int yValue = 0;
-        int xValue = 0;
-        
-        for (int i = 0; i < 6 ; i ++)
-        {
-            if (tetriminoSquaresChecker[typeSelect][i] == 1) // If there is a sqaure at this position
-            {
-                yValue = (yPositionCopy[i] + tetriminoYpositionCopy) / 38;
-                xValue = ((xPositionCopy[i] + tetriminoXpositionCopy) / 38 ) - 3;
-                
-                if (gridValuesCopy[yValue][xValue] != -1 || xPositionCopy[i] + tetriminoXpositionCopy >= 494)
-                {
-                    return false; // piece wont rotate
-                }
-                
-            }
-        }
-        
-        for (int i = 0 ; i < 6; i ++)
-        {
-            xPosition[i] = xPositionCopy[i];
-            yPosition[i] = yPositionCopy[i];
-        }
-        
-        rotateCounter ++;
-        
-    }
-    
-    else
-    {
-        for (int i = 0 ; i < 6; i ++)
-        {
-            xPosition[i] = xPositionCopy[i];
-            yPosition[i] = yPositionCopy[i];
-        }
+        addCordinatesForThreeByTwoShapes(); // The temporary variables are then copied into the permentant x and y cordiantes for each of the 4 sqaures that make up a shape
         rotateCounter ++;
     }
-
+    
+    else                                    // if this is not the first time
+    {
+        if (checkForRotatedShapeHittingOtherSqaures() == false) // if the shape is rotated will it hit a square, this is caclulated using the temporary values calculated in setPositionOfRotatedSqaures()?
+        {
+            return false;
+        }
+        
+        addCordinatesForThreeByTwoShapes(); // The temporary variables are then copied into the permentant x and y cordiantes for each of the 4 sqaures that make up a shape
+        rotateCounter ++;
+    }
+    
     if (rotateCounter == 4) // If all rotations are complete this is reset
     {
         rotateCounter = 0;
     }
     
     repaint();
-    // delete pointers
     return true;
-   
 }
 
 
-
-
-
-std::vector <int> Tetrimino::returnXposition(int tetriminoXposition, int width) // THIS DOESN'T NEED TO BE A VECTOR.
+void Tetrimino::setPositionOfRotatedSqaures()
 {
+    /*
+      
+     For all shapes apart from the i block and the o block they are made up of a 3 x 2 grid.
+     Each shape is only four squares, so this leaves two blank.
+     This function sets the cordinates for each of the 6 squares once a rotation has taken place.
+     The static pointer means that this axis is the smaller (the 2) from the 3 X 2 grid.
+     When calculating the shape the axis that is static remains at the same position for the first three squares calculated then moves to a consecutive second position for the next three squares.
+     The moving pointer means that this axis is the bigger (the 3) from the 3 X 2 grid.
+     When caclculating the shape the moving axis is at three different consecutive positions for the first three squsres.
+     Then for the next three squares it resets and repeats itself and does the same three positions.
+     These two working together draws a 3X2 grid.
+     
+     The i block doesn't follow this pattern however the pointers are called static and moving so it can match up with the naming for the other shapes.
+     
+     */
     
-    std::vector<int> xPositions;
-    //int *positions = new int[4];
-
-    if (typeSelect != 0 && typeSelect != 1)
+    
+    int rowIncrement = 0;
+    int increment = xOrYstartPos[rotateCounter];
+    int* xOrYpointerStatic = nullptr;
+    int* xOrYpointerMoving = nullptr;
+    
+    if (rotateCounter == 0 || rotateCounter == 2)   // if its flat/ a wider piece
     {
-        for (int count = 0; count < 6; count ++)
+        xOrYpointerStatic = yPositionCopy;
+        xOrYpointerMoving = xPositionCopy;
+        
+    }
+    else                                            // if its a taller rotation
+    {
+        xOrYpointerStatic = xPositionCopy;
+        xOrYpointerMoving = yPositionCopy;
+
+    }
+    
+    if (typeSelect != 0)
+    {
+        for (int count = 0; count < 6; count ++ )   // Writes the cordiantes for each sqaure
         {
-            if (tetriminoSquaresChecker[typeSelect][count] == 1) // If there is a sqaure at this position
+            
+            if (count == 3)                                    // Re sets the row or collum that it is counting through
             {
-                xPositions.push_back(xPosition[count] + tetriminoXposition);
+                rowIncrement = (rotateCounter + 1);             // Choses the next value for the row select array
+                increment = xOrYstartPos[rotateCounter];
             }
+            
+            xOrYpointerStatic[count] = rowSelect[rotateCounter + rowIncrement];
+            xOrYpointerMoving[count] = xOrYcordintates[increment];
+            increment += xOrYdirection[rotateCounter];
         }
     }
     
     else
     {
-        for (int count = 0; count < 4 ; count ++)
-        {
-            if (typeSelect == 0)
+
+            for (int i = 0; i < 4; i ++)                        ///WORK OUT THIS POINTER PROBLEM
             {
-                if (width == 152 )
+                if (rotateCounter == 0 || rotateCounter == 2)
                 {
-                    xPositions.push_back(iXdimensionsFlat[count] + tetriminoXposition);      // sort out i block
+                    xOrYpointerMoving[i] = iXdimensionsFlat[i];
+                    xOrYpointerStatic[i] = iYdimensionsFlat[i];
                 }
                 else
                 {
-                    xPositions.push_back(iXdimensionsStanding[count] + tetriminoXposition);
+                    xOrYpointerMoving[i] = iYdimensionsStanding[i];
+                    xOrYpointerStatic[i] = iXdimensionsStanding[i];
                 }
             }
-            else if (typeSelect == 1)
+    }
+    
+    xOrYpointerStatic = nullptr;
+    xOrYpointerMoving = nullptr;
+}
+bool Tetrimino::checkForRotatedShapeHittingOtherSqaures()
+{
+    int yValue = 0;
+    int xValue = 0;
+    
+    for (int i = 0; i < typeOfTetriminoForLoopSize ; i ++)
+    {
+        if (tetriminoSquaresChecker[typeSelect][i] == 1) // If there is a sqaure at this position
+        {
+            yValue = (yPositionCopy[i] + tetriminoYpositionCopy) / 38;
+            xValue = ((xPositionCopy[i] + tetriminoXpositionCopy) / 38 ) - 3;
+            
+            if (gridValuesCopy[yValue][xValue] != -1 || xPositionCopy[i] + tetriminoXpositionCopy >= 494)
             {
-                xPositions.push_back(oXdimensions[count] + tetriminoXposition);
+                return false; // piece wont rotate
             }
         }
     }
     
+    return true;
+}
+
+void Tetrimino::addCordinatesForThreeByTwoShapes()
+{
+    int j = 0;
+    for (int i = 0 ; i < typeOfTetriminoForLoopSize; i ++)
+    {
+        if (tetriminoSquaresChecker[typeSelect][i] == 1) // If there is a sqaure at this position set the position of the sqaures.
+        {
+            xPosition[j] = xPositionCopy[i];
+            yPosition[j] = yPositionCopy[i];
+            j++;
+        }
+    }
+}
+
+std::vector <int> Tetrimino::returnXposition(int tetriminoXposition, int width) // THIS DOESN'T NEED TO BE A VECTOR.
+{
+    std::vector<int> xPositions;
     
+    for (int count = 0; count < 4; count ++)
+    {
+        xPositions.push_back(xPosition[count] + tetriminoXposition);
+    }
     return xPositions;
 }
 
@@ -193,37 +222,9 @@ std::vector <int> Tetrimino::returnYposition(int tetriminoYposition, int width)
 {
     std::vector<int> yPositions;
     
-    if (typeSelect != 0 && typeSelect != 1)
+    for (int count = 0; count < 4; count ++)
     {
-        for (int count = 0; count < 6; count ++)
-        {
-            if (tetriminoSquaresChecker[typeSelect][count] == 1) // If there is a sqaure at this position
-            {
-                yPositions.push_back(yPosition[count] + tetriminoYposition);
-            }
-        }
-    }
-    
-    else
-    {
-        for (int count = 0; count < 4 ; count ++)
-        {
-            if (typeSelect == 0)
-            {
-                if (width == 152 )
-                {
-                    yPositions.push_back(iYdimensionsFlat[count] + tetriminoYposition);      // sort out i block
-                }
-                else
-                {
-                    yPositions.push_back(iYdimensionsStanding[count] + tetriminoYposition);
-                }
-            }
-            else if (typeSelect == 1)
-            {
-                yPositions.push_back(oYdimensions[count] + tetriminoYposition);
-            }
-        }
+        yPositions.push_back(yPosition[count] + tetriminoYposition);
     }
     
     return yPositions;
@@ -233,44 +234,11 @@ std::vector <int> Tetrimino::returnYposition(int tetriminoYposition, int width)
 void Tetrimino::paint(Graphics& g)
 {
     g.setColour(tetriminoColorus[typeSelect]);
-    
-    if (typeSelect == 0)
+
+    for (int i = 0; i < 4; i ++)
     {
-        for (int i = 0; i < 4; i ++)
-        {
-            if (widthForIblock == 0)
-            {
-                g.drawRect(iXdimensionsFlat[i]/squareSize, iYdimensionsFlat[i]/squareSize, 38/squareSize, 38/squareSize);
-                g.fillRect(iXdimensionsFlat[i]/squareSize, iYdimensionsFlat[i]/squareSize, 38/squareSize, 38/squareSize);
-            }
-            else if (widthForIblock == 1)
-            {
-                g.drawRect(iXdimensionsStanding[i]/squareSize, iYdimensionsStanding[i]/squareSize, 38/squareSize, 38/squareSize);
-                g.fillRect(iXdimensionsStanding[i]/squareSize, iYdimensionsStanding[i]/squareSize, 38/squareSize, 38/squareSize);
-            }
-        }
+        g.drawRect(xPosition[i]/squareSize, yPosition[i]/squareSize, 38/squareSize, 38/squareSize);
+        g.fillRect(xPosition[i]/squareSize, yPosition[i]/squareSize, 38/squareSize, 38/squareSize);
     }
-    
-    else if (typeSelect == 1)
-    {
-        for (int i = 0; i < 4; i ++)
-        {
-            g.drawRect(oXdimensions[i]/squareSize, oYdimensions[i]/squareSize, 38/squareSize, 38/squareSize);
-            g.fillRect(oXdimensions[i]/squareSize, oYdimensions[i]/squareSize, 38/squareSize, 38/squareSize);
-        }
-    }
-    
-    else // the remaining tetriminos are shaped
-    {
-        for (int count = 0; count < 6; count ++ )
-        {
-            if (tetriminoSquaresChecker[typeSelect][count] == 1) // If there is a sqaure at this position
-            {
-                g.drawRect(xPosition[count]/squareSize, yPosition[count]/squareSize, 38/squareSize, 38/squareSize);
-                g.fillRect(xPosition[count]/squareSize, yPosition[count]/squareSize, 38/squareSize, 38/squareSize);
-            }
-        }
-    }
-    
     
 }

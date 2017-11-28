@@ -14,7 +14,6 @@
 
 DrawTetrimino::DrawTetrimino()
 {
-    
     gridValues.resize(21);                      // Make it hold 21 different vectors, which is one for each line
     
     for (int i = 0; i < gridValues.size(); i ++)
@@ -29,7 +28,6 @@ DrawTetrimino::DrawTetrimino()
             gridValues[i][j] = -1;           // Sets each piece of the grid equal to 0
         }
     }
-
 }
 DrawTetrimino::~DrawTetrimino()
 {
@@ -48,7 +46,7 @@ void DrawTetrimino::updateGrid(vector<vector <int>> &gridValuesReference)
     }
 }
 
-bool DrawTetrimino::updateDimensions(std::vector <int> xDimensions,std::vector<int> yDimensions, int type) // THIS DOESN'T NEED TO BE A VECTOR.
+bool DrawTetrimino::updateDimensions(std::vector <int> xDimensions,std::vector<int> yDimensions, int type)
 {
     
     bool linesHaveBeenCleared = false;
@@ -88,9 +86,7 @@ bool DrawTetrimino::updateDimensions(std::vector <int> xDimensions,std::vector<i
             }
             repaint();
             linesHaveBeenCleared = true;
- 
         }
-        
     }
  
     repaint();
