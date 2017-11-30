@@ -151,7 +151,7 @@ void Tetrimino::setPositionOfRotatedSqaures()
     else
     {
 
-            for (int i = 0; i < 4; i ++)                        ///WORK OUT THIS POINTER PROBLEM
+            for (int i = 0; i < 4; i ++)                     
             {
                 if (rotateCounter == 0 || rotateCounter == 2)
                 {
@@ -181,7 +181,7 @@ bool Tetrimino::checkForRotatedShapeHittingOtherSqaures()
             yValue = (yPositionCopy[i] + tetriminoYpositionCopy) / 38;
             xValue = ((xPositionCopy[i] + tetriminoXpositionCopy) / 38 ) - 3;
             
-            if (gridValuesCopy[yValue][xValue] != -1 || xPositionCopy[i] + tetriminoXpositionCopy >= 494)
+            if (yValue >= 21 || yValue <= -1 || gridValuesCopy[yValue][xValue] != -1 || xValue >= 10 || (xPositionCopy[i] + tetriminoXpositionCopy) >= 494 )  // fix this and find the problem earlier for the yvalues == to 21 and -1
             {
                 return false; // piece wont rotate
             }

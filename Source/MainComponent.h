@@ -75,6 +75,7 @@ private:
     bool holdPiece = false;
     bool firstTimeHold = true;
     bool firstTimeRandom = true;
+    bool pieceCanBeMoved = true;
     int holdTetrimino = 0;
     std::vector <int> randomPieces;
     std::vector <int> currentXpositions;

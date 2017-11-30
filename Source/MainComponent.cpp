@@ -69,6 +69,7 @@ void MainContentComponent::counterChanged (int counterValue_)
 {
     if (canPieceFallFurther == false) // if the piece can't fall further
     {
+        pieceCanBeMoved = false;
         drawTetriminoOnGrid();  // draw the tetrimino
     }
 
@@ -101,6 +102,7 @@ void MainContentComponent::createNewPiece()
     numberOfSquaresFallen = 0;                                      // How many squares the piece has fallen is reset each time its a new piece
     rotationCounter = 0;                                            // Reset the rotation counter
     currentTetriminoXposition = 304;                                // Reset the piece to the middle
+    pieceCanBeMoved = true;
     
     if (holdPiece != true)                                          // If the piece is not retrieved from the hold
     {
@@ -125,7 +127,7 @@ void MainContentComponent::createNewPiece()
         }
     }
     
-   // tetriminoType = 0;                                            // Set type for testing purposes
+    //tetriminoType = 0;                                            // Set type for testing purposes
     
                                                                   // Checks to see if the component has the correct default width and height
     
@@ -228,13 +230,20 @@ void MainContentComponent::moveTetrimino(int downIncrement, int leftOrRightIncre
     {
         currentTetriminoXposition += leftOrRightIncrement;  // move the piece left or right
         numberOfSquaresFallen += downIncrement;             // increase number of sqaures fallen.
+        if(downIncrement == 38)
+        {
         canPieceFallFurther = true;                         // update the piece to be falling because the piece may not have been able to fall before it was moved (left or right)
+        }
         tetrimino.setBounds(currentTetriminoXposition, numberOfSquaresFallen, tetriminoWidthAndHeight[tetriminoType][0], tetriminoWidthAndHeight[tetriminoType][1]);// Apply the updated x or y position
     }
 
     else
     {
+       if(leftOrRightIncrement == 0)
+       {
         canPieceFallFurther = false;
+       }
+        
     }
 
     currentXpositions = tetrimino.returnXorYPositions(tetrimino.getX(), tetrimino.getWidth(), 0);
@@ -271,48 +280,60 @@ bool MainContentComponent::keyPressed(const KeyPress &key, Component* originatin
 {
      DBG(key.getKeyCode());
     
-    if (key.getKeyCode() == 63234)                              // Move tetrimino to the left
+    if (pieceCanBeMoved == true)
     {
-        if (currentTetriminoXposition >= 152){
-            moveTetrimino(0, -38);
-        }
-    }
-    
-    else if (key.getKeyCode() == 63235)                         // Move the tetrimino to the right
-    {
-        if (currentTetriminoXposition + tetriminoWidthAndHeight[tetriminoType][0] <= 456){
-            moveTetrimino(0, 38);
-        }
-    }
-    
-    else if (key.getKeyCode() == 63233)                         // Move tetrimino down
-    {
-        if (tetrimino.getY() + tetrimino.getHeight() <= 760){   // If the piece is not outside of the grid
-            moveTetrimino(38, 0);
+        pieceCanBeMoved = false;
+        if (key.getKeyCode() == 63234)                              // Move tetrimino to the left
+        {
+            if (currentTetriminoXposition >= 152){
+                moveTetrimino(0, -38);
+            }
         }
         
-        else
-            canPieceFallFurther = false;
-    }
-    
-    else if (key.getKeyCode() == 32)                            // Hard drop
-    {
-        while (canPieceFallFurther == true){
-            moveTetrimino(38, 0);
+        else if (key.getKeyCode() == 63235)                         // Move the tetrimino to the right
+        {
+            if (currentTetriminoXposition + tetriminoWidthAndHeight[tetriminoType][0] <= 456){
+                moveTetrimino(0, 38);
+            }
         }
-    }
-    
-    else if (key.getKeyCode() == 63232)
-    {
-        if (tetriminoType != 1) {
-            rotateTetrimino();
+        
+        else if (key.getKeyCode() == 63233)                         // Move tetrimino down
+        {
+            if (tetrimino.getY() + tetrimino.getHeight() <= 760){   // If the piece is not outside of the grid
+                moveTetrimino(38, 0);
+            }
+            
+            else
+                canPieceFallFurther = false;
         }
+        
+        else if (key.getKeyCode() == 32)                            // Hard drop
+        {
+            while (canPieceFallFurther == true){
+                moveTetrimino(38, 0);
+            }
+        }
+        
+        else if (key.getKeyCode() == 63232)
+        {
+            if (tetriminoType != 1) {
+                rotateTetrimino();
+            }
+        }
+        
+        else if (key.getKeyCode() == 96)
+        {
+            isPieceFalling = false;
+            holdPiece = true;
+        }
+        
+        pieceCanBeMoved = true;
+        
+        // after every key press update to see if it can fall or not
     }
-    
-    else if (key.getKeyCode() == 96)
+    else
     {
-        isPieceFalling = false;
-        holdPiece = true;
+            DBG("TASK NOT DONE");
     }
 }
 
@@ -350,6 +371,8 @@ void MainContentComponent::rotateTetrimino()
             currentXpositions = tetrimino.returnXorYPositions(tetrimino.getX(), tetrimino.getWidth(), 0);
             currentYpositions = tetrimino.returnXorYPositions(tetrimino.getY(), tetrimino.getWidth(), 1);
         }
+    
+        canPieceFallFurther = true;
 }
 
 void MainContentComponent::drawNextTetriminos()
